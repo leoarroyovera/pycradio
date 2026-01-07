@@ -38,11 +38,11 @@
         </button>
     </div>
 
-    <!-- Logo en esquina superior izquierda 
+    <!-- Logo en esquina superior izquierda -->
     <div class="logo-top-left">
         <img src="images/logo.png" alt="Poesía y Cumbia Radio">
     </div>
-    -->
+    
     <div class="container" ng-style="{'opacity': showLoadingModal ? 0 : 1, 'pointer-events': showLoadingModal ? 'none' : 'auto', 'transition': 'opacity 0.5s ease'}">
         <!-- Now Playing - Centro grande -->
         <div class="now-playing">
@@ -114,7 +114,7 @@
             <div ng-if="playingNext && playingNext.song && playingNext.song.text" 
                  class="playing-next-text"
                  ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
-                {{ playingNext.song.text }}
+                {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
             </div>
         </div>
 
@@ -141,7 +141,7 @@
                          onerror="this.style.display='none'">
                     <div ng-if="item.song && item.song.text" 
                          class="history-text">
-                        {{ item.song.text }}
+                        {{ item.song.artist }} -  {{ item.song.title }}
                     </div>
                 </div>
             </div>
@@ -159,7 +159,8 @@
         var app = angular.module('RadioApp', []);
 
         app.controller('RadioController', function($scope, $timeout) {
-            var radioUrl = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
+            //var radioUrl = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
+            var radioUrl = 'https://a11.asurahosting.com/hls/poesia_y_cumbia_radio/live.m3u8';
             var hls = null;
 
             $scope.isPlaying = false;
@@ -186,7 +187,8 @@
             $scope.previousPlayingNextId = null;
             var previousProgramImage = null;
             
-            var apiUrl = 'https://studio.loovacast.com/api/nowplaying/106';
+            //var apiUrl = 'https://studio.loovacast.com/api/nowplaying/106';
+             var apiUrl = 'https://a11.asurahosting.com/api/nowplaying/129';
             var apiUpdateInterval = null;
             var timeUpdateInterval = null;
             var songStartTime = null;
@@ -368,8 +370,11 @@
                     hls.attachMedia(videoPlayer);
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
                         console.log('HLS manifest parsed');
-                        // No ocultar el modal aquí, esperar al evento 'playing'
-                        videoPlayer.play();
+                        // No reproducir automáticamente - esperar interacción del usuario
+                        // El usuario iniciará la reproducción con el botón de reproducir
+                        $scope.$apply(function() {
+                            $scope.isLoading = false;
+                        });
                     });
                     hls.on(Hls.Events.ERROR, function(event, data) {
                         console.error('HLS.js error:', data);
@@ -385,8 +390,11 @@
                     videoPlayer.src = radioUrl;
                     videoPlayer.addEventListener('loadedmetadata', function() {
                         console.log('Video metadata loaded');
-                        // No ocultar el modal aquí, esperar al evento 'playing'
-                        videoPlayer.play();
+                        // No reproducir automáticamente - esperar interacción del usuario
+                        // El usuario iniciará la reproducción con el botón de reproducir
+                        $scope.$apply(function() {
+                            $scope.isLoading = false;
+                        });
                     });
                     videoPlayer.addEventListener('error', function(event) {
                         console.error('Video player error:', event);
@@ -594,7 +602,17 @@
                     } else {
                         $scope.isLoading = true;
                         $scope.error = null;
-                        videoPlayer.play();
+                        var playPromise = videoPlayer.play();
+                        // Manejar errores de la promesa de play()
+                        if (playPromise !== undefined) {
+                            playPromise.catch(function(error) {
+                                console.log('Error al reproducir:', error);
+                                $scope.$apply(function() {
+                                    $scope.isLoading = false;
+                                    $scope.error = 'Error al iniciar la reproducción: ' + (error.message || error.name || 'Error desconocido');
+                                });
+                            });
+                        }
                     }
                 } catch (e) {
                     console.log('Error en togglePlay:', e);
