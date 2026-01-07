@@ -48,12 +48,50 @@
         <div class="now-playing">
             <!-- Si hay datos de la API, mostrar arte y ficha técnica -->
             <div ng-if="nowPlaying && nowPlaying.song" class="now-playing-content">
-                <img ng-if="nowPlaying.song.art" 
-                     ng-src="{{ nowPlaying.song.art }}" 
-                     alt="Now Playing" 
-                     class="now-playing-art"
-                     ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}"
-                     onerror="this.style.display='none'">
+                <div class="now-playing-content-wrapper">
+                    <img ng-if="nowPlaying.song.art" 
+                         ng-src="{{ nowPlaying.song.art }}" 
+                         alt="Now Playing" 
+                         class="now-playing-art"
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId, 'playing': isPlaying && rotationEnabled}"
+                         onerror="this.style.display='none'">
+                    
+                    <!-- Controles bajo la imagen -->
+                    <div class="now-playing-controls">
+                        <button class="btn-play-pause" ng-click="togglePlay()" ng-disabled="isLoading">
+                            <svg ng-if="!isPlaying" class="play-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg ng-if="isPlaying" class="pause-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                            </svg>
+                        </button>
+                        
+                        <button class="btn-rotation" ng-click="toggleRotation()" ng-disabled="!isPlaying" title="{{rotationEnabled ? 'Desactivar rotación' : 'Activar rotación'}}">
+                            <svg ng-if="!rotationEnabled" class="rotation-icon-off" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg ng-if="rotationEnabled" class="rotation-icon-on" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Barra de progreso de tiempo -->
+                        <div class="progress-container" ng-if="nowPlaying && (nowPlaying.elapsed !== undefined || nowPlaying.duration)">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" ng-style="{'width': getProgressPercentage() + '%'}"></div>
+                            </div>
+                            <div class="progress-time">
+                                <span class="progress-time-elapsed">{{ formatTime(nowPlaying.elapsed) }}</span>
+                                <span class="progress-time-remaining" ng-if="nowPlaying.remaining">-{{ formatTime(nowPlaying.remaining) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="now-playing-info"
                      ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}">
@@ -73,17 +111,6 @@
                         <div class="now-playing-info-label">Dato PyC Radio:</div>
                         <div class="now-playing-info-value lyrics">{{ nowPlaying.song.lyrics }}</div>
                     </div>
-                    
-                    <!-- Barra de progreso de tiempo -->
-                    <div class="now-playing-info-item" ng-if="nowPlaying && (nowPlaying.elapsed !== undefined || nowPlaying.duration)">
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" ng-style="{'width': getProgressPercentage() + '%'}"></div>
-                        </div>
-                        <div class="progress-time">
-                            <span class="progress-time-elapsed">{{ formatTime(nowPlaying.elapsed) }}</span>
-                            <span class="progress-time-remaining" ng-if="nowPlaying.remaining">-{{ formatTime(nowPlaying.remaining) }}</span>
-                        </div>
-                    </div>
                 </div>
             </div>
             
@@ -92,19 +119,11 @@
                  style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
                 <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="logo-center">
             </div>
-            
-            <!-- Controles bajo now-playing -->
-            <div class="now-playing-controls">
-                <button class="btn" ng-click="togglePlay()" ng-disabled="isLoading">
-                    <span ng-if="!isPlaying">Reproducir</span>
-                    <span ng-if="isPlaying">Pausar</span>
-                </button>
-            </div>
         </div>
 
         <!-- Playing Next - Derecha superior -->
         <div class="playing-next">
-            <div class="playing-next-label">Siguiente canción</div>
+            <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
             <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
                  ng-src="{{ playingNext.song.art }}" 
                  alt="Playing Next" 
@@ -129,7 +148,10 @@
 
         <!-- Song History - Barra inferior -->
         <div class="song-history">
-            <div class="song-history-label">Recién escuchaste...</div>
+            <div class="song-history-header">
+                <img src="images/recien.png" alt="Recién escuchaste..." class="song-history-label">
+                <div class="song-history-divider"></div>
+            </div>
             <div class="song-history-items">
                 <div ng-repeat="item in songHistory | limitTo:5" 
                      class="history-item"
@@ -165,6 +187,7 @@
 
             $scope.isPlaying = false;
             $scope.isLoading = false;
+            $scope.rotationEnabled = true;
             $scope.error = null;
             $scope.nowPlaying = null;
             $scope.playingNext = null;
@@ -415,6 +438,42 @@
                 }
             }
 
+            // Función para pre-cargar imágenes
+            function preloadImages(imageUrls, callback) {
+                var loadedCount = 0;
+                var totalImages = imageUrls.length;
+                
+                if (totalImages === 0) {
+                    callback();
+                    return;
+                }
+                
+                imageUrls.forEach(function(url) {
+                    if (!url) {
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            callback();
+                        }
+                        return;
+                    }
+                    
+                    var img = new Image();
+                    img.onload = function() {
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            callback();
+                        }
+                    };
+                    img.onerror = function() {
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            callback();
+                        }
+                    };
+                    img.src = url;
+                });
+            }
+
             // Función para obtener información de la API
             function fetchNowPlaying() {
                 try {
@@ -460,33 +519,51 @@
                                             }
                                         }
                                         
-                                        // Esperar a que termine la animación de salida, luego actualizar datos y activar entrada
+                                        // Pre-cargar imágenes antes de hacer la transición
+                                        var imagesToPreload = [];
+                                        if (data.now_playing && data.now_playing.song && data.now_playing.song.art) {
+                                            imagesToPreload.push(data.now_playing.song.art);
+                                        }
+                                        if (data.playing_next && data.playing_next.song && data.playing_next.song.art) {
+                                            imagesToPreload.push(data.playing_next.song.art);
+                                        }
+                                        
+                                        // Esperar a que termine la animación de salida
                                         $timeout(function() {
-                                            // Limpiar IDs anteriores para activar animación de entrada
-                                            $scope.previousNowPlayingId = null;
-                                            $scope.previousPlayingNextId = null;
-                                            
-                                            // Actualizar datos
-                                            $scope.nowPlaying = data.now_playing || null;
-                                            $scope.playingNext = data.playing_next || null;
-                                            $scope.songHistory = data.song_history || [];
-                                            
-                                            // Iniciar actualización del tiempo para la nueva canción
-                                            if ($scope.nowPlaying) {
-                                                startTimeUpdate($scope.nowPlaying);
-                                            }
-                                            
-                                            // Activar animación de entrada en nuevos elementos
-                                            // (animatingNowPlaying ya está en true)
-                                            
-                                            // Remover clases de animación después de completar entrada
-                                            $timeout(function() {
-                                                $scope.animatingNowPlaying = false;
-                                                $scope.animatingPlayingNext = false;
-                                                $scope.animatingHistoryItem = false;
-                                                $scope.previousNowPlayingId = newNowPlayingId;
-                                                $scope.previousPlayingNextId = newPlayingNextId;
-                                            }, 800);
+                                            // Pre-cargar imágenes y luego actualizar
+                                            preloadImages(imagesToPreload, function() {
+                                                // Limpiar IDs anteriores para activar animación de entrada
+                                                $scope.previousNowPlayingId = null;
+                                                $scope.previousPlayingNextId = null;
+                                                
+                                                // Actualizar datos
+                                                $scope.nowPlaying = data.now_playing || null;
+                                                $scope.playingNext = data.playing_next || null;
+                                                $scope.songHistory = data.song_history || [];
+                                                
+                                                // Iniciar actualización del tiempo para la nueva canción
+                                                if ($scope.nowPlaying) {
+                                                    startTimeUpdate($scope.nowPlaying);
+                                                }
+                                                
+                                                // Si es la primera carga exitosa, ocultar el modal de carga
+                                                if (isFirstLoad) {
+                                                    $scope.showLoadingModal = false;
+                                                    $scope.loadingError = null;
+                                                }
+                                                
+                                                // Activar animación de entrada en nuevos elementos
+                                                // (animatingNowPlaying ya está en true)
+                                                
+                                                // Remover clases de animación después de completar entrada
+                                                $timeout(function() {
+                                                    $scope.animatingNowPlaying = false;
+                                                    $scope.animatingPlayingNext = false;
+                                                    $scope.animatingHistoryItem = false;
+                                                    $scope.previousNowPlayingId = newNowPlayingId;
+                                                    $scope.previousPlayingNextId = newPlayingNextId;
+                                                }, 800);
+                                            });
                                         }, 800);
                                     } else {
                                         // Sin cambios, actualizar normalmente
@@ -498,6 +575,12 @@
                                         if (isFirstLoad && $scope.nowPlaying) {
                                             startTimeUpdate($scope.nowPlaying);
                                         }
+                                    }
+                                    
+                                    // Si es la primera carga exitosa, ocultar el modal de carga
+                                    if (isFirstLoad) {
+                                        $scope.showLoadingModal = false;
+                                        $scope.loadingError = null;
                                     }
                                     
                                     // Actualizar IDs anteriores
@@ -531,17 +614,63 @@
                         if (xhr.status === 200 || xhr.status === 0) {
                             try {
                                 var data = JSON.parse(xhr.responseText);
-                                $scope.$apply(function() {
-                                    var isFirstLoad = !previousNowPlayingId;
-                                    $scope.nowPlaying = data.now_playing || null;
-                                    $scope.playingNext = data.playing_next || null;
-                                    $scope.songHistory = data.song_history || [];
-                                    
-                                    // Si es la primera carga, iniciar actualización del tiempo
-                                    if (isFirstLoad && $scope.nowPlaying) {
-                                        startTimeUpdate($scope.nowPlaying);
+                                var newNowPlayingId = data.now_playing && data.now_playing.song ? data.now_playing.song.id : null;
+                                var newPlayingNextId = data.playing_next && data.playing_next.song ? data.playing_next.song.id : null;
+                                var isFirstLoad = !previousNowPlayingId;
+                                var songChanged = previousNowPlayingId && newNowPlayingId && previousNowPlayingId !== newNowPlayingId;
+                                
+                                if (songChanged) {
+                                    // Pre-cargar imágenes antes de hacer la transición
+                                    var imagesToPreload = [];
+                                    if (data.now_playing && data.now_playing.song && data.now_playing.song.art) {
+                                        imagesToPreload.push(data.now_playing.song.art);
                                     }
-                                });
+                                    if (data.playing_next && data.playing_next.song && data.playing_next.song.art) {
+                                        imagesToPreload.push(data.playing_next.song.art);
+                                    }
+                                    
+                                    preloadImages(imagesToPreload, function() {
+                                        $scope.$apply(function() {
+                                            $scope.nowPlaying = data.now_playing || null;
+                                            $scope.playingNext = data.playing_next || null;
+                                            $scope.songHistory = data.song_history || [];
+                                            
+                                            // Si es la primera carga, iniciar actualización del tiempo
+                                            if (isFirstLoad && $scope.nowPlaying) {
+                                                startTimeUpdate($scope.nowPlaying);
+                                            }
+                                            
+                                            // Si es la primera carga exitosa, ocultar el modal de carga
+                                            if (isFirstLoad) {
+                                                $scope.showLoadingModal = false;
+                                                $scope.loadingError = null;
+                                            }
+                                            
+                                            previousNowPlayingId = newNowPlayingId;
+                                            previousPlayingNextId = newPlayingNextId;
+                                        });
+                                    });
+                                } else {
+                                    $scope.$apply(function() {
+                                        $scope.nowPlaying = data.now_playing || null;
+                                        $scope.playingNext = data.playing_next || null;
+                                        $scope.songHistory = data.song_history || [];
+                                        
+                                        // Si es la primera carga, iniciar actualización del tiempo
+                                        if (isFirstLoad && $scope.nowPlaying) {
+                                            startTimeUpdate($scope.nowPlaying);
+                                        }
+                                        
+                                        // Si es la primera carga exitosa, ocultar el modal de carga
+                                        if (isFirstLoad) {
+                                            $scope.showLoadingModal = false;
+                                            $scope.loadingError = null;
+                                        }
+                                        
+                                        previousNowPlayingId = newNowPlayingId;
+                                        previousPlayingNextId = newPlayingNextId;
+                                    });
+                                }
                             } catch (e) {
                                 console.log('Error al parsear respuesta:', e);
                             }
@@ -583,6 +712,11 @@
                 $timeout(function() {
                     loadChannel();
                 }, 100);
+            };
+
+            // Función para activar/desactivar la rotación del disco
+            $scope.toggleRotation = function() {
+                $scope.rotationEnabled = !$scope.rotationEnabled;
             };
 
             // Función para reproducir/pausar
