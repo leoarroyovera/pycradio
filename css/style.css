@@ -759,3 +759,189 @@ body {
 .loading-modal-retry-btn:active {
     background-color: rgba(255, 107, 107, 0.5);
 }
+
+/* Media Queries para móviles */
+@media (max-width: 768px) {
+    .logo-top-left img {
+        width: 40%;
+    }
+
+    .container {
+        grid-template-rows: auto auto auto;
+        gap: 15px;
+        padding: 10px;
+        position: relative;
+    }
+
+    .now-playing {
+        grid-row: 1;
+        padding: 15px;
+        padding-left: 10px;
+        padding-bottom: 120px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .now-playing-content {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .now-playing-content-wrapper {
+        width: 100%;
+        max-width: 100%;
+        align-items: center;
+    }
+
+    .now-playing-art {
+        width: 250px;
+        height: 250px;
+        max-width: 250px;
+        max-height: 250px;
+    }
+
+    .now-playing-info {
+        width: 100%;
+        text-align: center;
+        align-items: center;
+    }
+
+    .now-playing-info-value.title {
+        font-size: 24px;
+    }
+
+    .now-playing-info-value.artist {
+        font-size: 20px;
+    }
+
+    .now-playing-info-value.album {
+        font-size: 16px;
+    }
+
+    .now-playing-info-value.lyrics {
+        font-size: 14px;
+    }
+
+    .now-playing-controls {
+        width: 100%;
+        max-width: 100%;
+        justify-content: center;
+    }
+
+    .progress-container {
+        max-width: 100%;
+    }
+
+    /* Playing Next - Mover abajo del now playing */
+    .playing-next {
+        position: fixed !important;
+        top: 55vh !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+        width: 90%;
+        max-width: 300px;
+        margin: 0;
+        padding: 10px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .playing-next-art {
+        width: 150px;
+        height: 150px;
+        max-width: 150px;
+        max-height: 150px;
+    }
+
+    /* Song History - Columnas de 2 o 3 */
+    .song-history {
+        grid-row: 3;
+        grid-column: 1 / -1;
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .song-history-items {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .history-item {
+        flex: none;
+    }
+
+    .history-art {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
+    }
+
+    /* Program Image - Siempre abajo a la izquierda */
+    .program-image-container {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 25%;
+        max-width: 120px;
+        z-index: 999;
+    }
+
+    .program-image {
+        width: 100%;
+        height: auto;
+    }
+}
+
+/* Media Query para pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .song-history-items {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .now-playing-art {
+        width: 200px;
+        height: 200px;
+        max-width: 200px;
+        max-height: 200px;
+    }
+
+    .playing-next-art {
+        width: 120px;
+        height: 120px;
+        max-width: 120px;
+        max-height: 120px;
+    }
+
+    .now-playing-info-value.title {
+        font-size: 20px;
+    }
+
+    .now-playing-info-value.artist {
+        font-size: 18px;
+    }
+
+    .btn-play-pause,
+    .btn-rotation {
+        width: 48px;
+        height: 48px;
+        padding: 10px;
+    }
+
+    .btn-play-pause svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .btn-rotation svg {
+        width: 20px;
+        height: 20px;
+    }
+}
