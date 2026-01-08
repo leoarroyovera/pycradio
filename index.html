@@ -38,12 +38,21 @@
         </button>
     </div>
 
-    <!-- Logo en esquina superior izquierda -->
-    <div class="logo-top-left">
-        <img src="images/logo.png" alt="Poesía y Cumbia Radio">
-    </div>
-    
-    <div class="container" ng-style="{'opacity': showLoadingModal ? 0 : 1, 'pointer-events': showLoadingModal ? 'none' : 'auto', 'transition': 'opacity 0.5s ease'}">
+    <div class="main-layout" ng-style="{'opacity': showLoadingModal ? 0 : 1, 'pointer-events': showLoadingModal ? 'none' : 'auto', 'transition': 'opacity 0.5s ease'}">
+        <!-- Logo en esquina superior izquierda -->
+        <div class="logo-top-left">
+            <img src="images/logo.png" alt="Poesía y Cumbia Radio">
+        </div>
+
+        <!-- Imagen del programa según horario -->
+        <div class="program-image-container">
+            <img ng-src="{{ currentProgramImage }}" 
+                 alt="Programa actual" 
+                 class="program-image"
+                 ng-class="{'animating-in': animatingProgramImage}"
+                 onerror="this.src='images/programas/default.png'">
+        </div>
+
         <!-- Now Playing - Centro grande -->
         <div class="now-playing">
             <!-- Si hay datos de la API, mostrar arte y ficha técnica -->
@@ -96,21 +105,40 @@
                 <div class="now-playing-info"
                      ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}">
                     <div class="now-playing-info-item" ng-if="nowPlaying.song.title">
-                        <div class="now-playing-info-label">Título</div>
+                        <svg class="info-icon" viewBox="0 0 24 24" fill="white" width="20" height="20">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
                         <div class="now-playing-info-value title">{{ nowPlaying.song.title }}</div>
                     </div>
                     <div class="now-playing-info-item" ng-if="nowPlaying.song.artist">
-                        <div class="now-playing-info-label">Artista</div>
+                        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
                         <div class="now-playing-info-value artist">{{ nowPlaying.song.artist }}</div>
                     </div>
                     <div class="now-playing-info-item" ng-if="nowPlaying.song.album">
-                        <div class="now-playing-info-label">Álbum</div>
+                        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 12 14 10 12 3 19"/>
+                        </svg>
                         <div class="now-playing-info-value album">{{ nowPlaying.song.album }}</div>
                     </div>
                     <div class="now-playing-info-item" ng-if="nowPlaying.song.lyrics">
-                        <div class="now-playing-info-label">Dato PyC Radio:</div>
+                        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
                         <div class="now-playing-info-value lyrics">{{ nowPlaying.song.lyrics }}</div>
                     </div>
+
+                    <div class="song-history-divider"></div>
                 </div>
             </div>
             
@@ -119,11 +147,14 @@
                  style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
                 <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="logo-center">
             </div>
+
+            
         </div>
 
         <!-- Playing Next - Derecha superior -->
         <div class="playing-next">
             <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
+            <div class="song-history-divider"></div>
             <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
                  ng-src="{{ playingNext.song.art }}" 
                  alt="Playing Next" 
@@ -137,33 +168,50 @@
             </div>
         </div>
 
-        <!-- Imagen del programa según horario -->
-        <div class="program-image-container">
-            <img ng-src="{{ currentProgramImage }}" 
-                 alt="Programa actual" 
-                 class="program-image"
-                 ng-class="{'animating-in': animatingProgramImage}"
-                 onerror="this.src='images/programas/default.png'">
-        </div>
-
         <!-- Song History - Barra inferior -->
         <div class="song-history">
             <div class="song-history-header">
-                <img src="images/recien.png" alt="Recién escuchaste..." class="song-history-label">
-                <div class="song-history-divider"></div>
+                <div class="song-history-header-left">
+                    <img src="images/recien.png" alt="Recién escuchaste..." class="song-history-label">
+                    <div class="song-history-divider"></div>
+                </div>
+                <div class="playing-next-mobile-wrapper">
+                    <div class="playing-next playing-next-mobile">
+                        <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
+                        <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
+                             ng-src="{{ playingNext.song.art }}" 
+                             alt="Playing Next" 
+                             class="playing-next-art"
+                             ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}"
+                             onerror="this.style.display='none'">
+                        <div ng-if="playingNext && playingNext.song && playingNext.song.text" 
+                             class="playing-next-text"
+                             ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
+                            {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="song-history-items">
-                <div ng-repeat="item in songHistory | limitTo:5" 
+            <div class="song-history-items" ng-click="closeHistoryModal()">
+                <div ng-repeat="item in songHistory | limitTo:6" 
                      class="history-item"
-                     ng-class="{'animating-in': animatingHistoryItem && $index === 0}">
-                    <img ng-if="item.song && item.song.art" 
-                         ng-src="{{ item.song.art }}" 
-                         alt="{{ item.song.text }}" 
-                         class="history-art"
-                         onerror="this.style.display='none'">
-                    <div ng-if="item.song && item.song.text" 
-                         class="history-text">
-                        {{ item.song.artist }} -  {{ item.song.title }}
+                     ng-class="{'animating-in': animatingHistoryItem && $index === 0, 'expanded': expandedHistoryIndex === $index}">
+                    <div class="history-art-wrapper" ng-click="$event.stopPropagation(); toggleHistoryItem($index)">
+                        <img ng-if="item.song && item.song.art" 
+                             ng-src="{{ item.song.art }}" 
+                             alt="{{ item.song.text }}" 
+                             class="history-art"
+                             onerror="this.style.display='none'">
+                        <div ng-if="expandedHistoryIndex === $index && item.song && item.song.text" 
+                             class="history-modal"
+                             ng-click="$event.stopPropagation()">
+                            <div class="history-modal-content">
+                                <div class="history-modal-text">
+                                    <div class="history-modal-artist" ng-if="item.song.artist">{{ item.song.artist }}</div>
+                                    <div class="history-modal-title" ng-if="item.song.title">{{ item.song.title }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,6 +254,9 @@
             $scope.animatingPlayingNext = false;
             $scope.animatingHistoryItem = false;
             $scope.animatingProgramImage = false;
+            
+            // Variable para rastrear qué item del historial está expandido
+            $scope.expandedHistoryIndex = null;
             $scope.previousNowPlayingId = null;
             $scope.previousPlayingNextId = null;
             var previousProgramImage = null;
@@ -717,6 +768,20 @@
             // Función para activar/desactivar la rotación del disco
             $scope.toggleRotation = function() {
                 $scope.rotationEnabled = !$scope.rotationEnabled;
+            };
+
+            // Función para expandir/colapsar items del historial
+            $scope.toggleHistoryItem = function(index) {
+                if ($scope.expandedHistoryIndex === index) {
+                    $scope.expandedHistoryIndex = null;
+                } else {
+                    $scope.expandedHistoryIndex = index;
+                }
+            };
+
+            // Cerrar modal del historial al hacer click fuera
+            $scope.closeHistoryModal = function() {
+                $scope.expandedHistoryIndex = null;
             };
 
             // Función para reproducir/pausar
