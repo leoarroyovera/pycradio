@@ -49,7 +49,7 @@
             <img ng-src="{{ currentProgramImage }}" 
                  alt="Programa actual" 
                  class="program-image"
-                 ng-class="{'animating-in': animatingProgramImage}"
+                 
                  onerror="this.src='images/programas/default.png'">
         </div>
 
@@ -57,60 +57,19 @@
         <div class="now-playing">
             <!-- Si hay datos de la API, mostrar arte y ficha técnica -->
             <div ng-if="nowPlaying && nowPlaying.song" class="now-playing-content">
-                <div class="now-playing-content-wrapper">
-                    <img ng-if="nowPlaying.song.art" 
-                         ng-src="{{ nowPlaying.song.art }}" 
-                         alt="Now Playing" 
-                         class="now-playing-art"
-                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId, 'playing': isPlaying && rotationEnabled}"
-                         onerror="this.style.display='none'">
-                    
-                    <!-- Controles bajo la imagen -->
-                    <div class="now-playing-controls">
-                        <button class="btn-play-pause" ng-click="togglePlay()" ng-disabled="isLoading">
-                            <svg ng-if="!isPlaying" class="play-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                            <svg ng-if="isPlaying" class="pause-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
-                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                            </svg>
-                        </button>
-                        
-                        <button class="btn-rotation" ng-click="toggleRotation()" ng-disabled="!isPlaying" title="{{rotationEnabled ? 'Desactivar rotación' : 'Activar rotación'}}">
-                            <svg ng-if="!rotationEnabled" class="rotation-icon-off" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
-                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <svg ng-if="rotationEnabled" class="rotation-icon-on" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
-                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                        
-                        <!-- Barra de progreso de tiempo -->
-                        <div class="progress-container" ng-if="nowPlaying && (nowPlaying.elapsed !== undefined || nowPlaying.duration)">
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" ng-style="{'width': getProgressPercentage() + '%'}"></div>
-                            </div>
-                            <div class="progress-time">
-                                <span class="progress-time-elapsed">{{ formatTime(nowPlaying.elapsed) }}</span>
-                                <span class="progress-time-remaining" ng-if="nowPlaying.remaining">-{{ formatTime(nowPlaying.remaining) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="now-playing-info"
-                     ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}">
-                    <div class="now-playing-info-item" ng-if="nowPlaying.song.title">
+                <!-- Fila 1: Info (ancho completo) -->
+                <div class="now-playing-info">
+                    <div class="now-playing-info-item" 
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}"
+                         ng-if="nowPlaying.song.title">
                         <svg class="info-icon" viewBox="0 0 24 24" fill="white" width="20" height="20">
                             <path d="M8 5v14l11-7z"/>
                         </svg>
                         <div class="now-playing-info-value title">{{ nowPlaying.song.title }}</div>
                     </div>
-                    <div class="now-playing-info-item" ng-if="nowPlaying.song.artist">
+                    <div class="now-playing-info-item" 
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}"
+                         ng-if="nowPlaying.song.artist">
                         <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -119,7 +78,9 @@
                         </svg>
                         <div class="now-playing-info-value artist">{{ nowPlaying.song.artist }}</div>
                     </div>
-                    <div class="now-playing-info-item" ng-if="nowPlaying.song.album">
+                    <div class="now-playing-info-item" 
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}"
+                         ng-if="nowPlaying.song.album">
                         <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                             <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -127,7 +88,9 @@
                         </svg>
                         <div class="now-playing-info-value album">{{ nowPlaying.song.album }}</div>
                     </div>
-                    <div class="now-playing-info-item" ng-if="nowPlaying.song.lyrics">
+                    <div class="now-playing-info-item" 
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId}"
+                         ng-if="nowPlaying.song.lyrics">
                         <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
@@ -137,8 +100,103 @@
                         </svg>
                         <div class="now-playing-info-value lyrics">{{ nowPlaying.song.lyrics }}</div>
                     </div>
-
                     <div class="song-history-divider"></div>
+                </div>
+
+                <!-- Fila 2: Art -->
+                <div class="now-playing-art-wrapper">
+                    <img ng-if="nowPlaying.song.art" 
+                         ng-src="{{ nowPlaying.song.art }}" 
+                         alt="Now Playing" 
+                         class="now-playing-art"
+                         ng-class="{'animating-out': animatingNowPlaying && previousNowPlayingId, 'animating-in': animatingNowPlaying && !previousNowPlayingId, 'playing': isPlaying && rotationEnabled}"
+                         onerror="this.style.display='none'">
+                </div>
+
+                <!-- Playing Next - Fila 2, Col 2 -->
+                <div class="playing-next playing-next-inline">
+                    <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
+                    <div class="song-history-divider"></div>
+                    <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
+                         ng-src="{{ playingNext.song.art }}" 
+                         alt="Playing Next" 
+                         class="playing-next-art"
+                         ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}"
+                         onerror="this.style.display='none'">
+                    <div ng-if="playingNext && playingNext.song && playingNext.song.text" 
+                         class="playing-next-text"
+                         ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
+                        {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
+                    </div>
+                </div>
+
+                <!-- Fila 3: Controls -->
+                <div class="now-playing-controls">
+                    <button class="btn-play-pause" ng-click="togglePlay()" ng-disabled="isLoading">
+                        <svg ng-if="!isPlaying" class="play-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg ng-if="isPlaying" class="pause-icon" viewBox="0 0 24 24" fill="white" width="32" height="32">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="btn-rotation" ng-click="toggleRotation()" ng-disabled="!isPlaying" title="{{rotationEnabled ? 'Desactivar rotación' : 'Activar rotación'}}">
+                        <svg ng-if="!rotationEnabled" class="rotation-icon-off" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg ng-if="rotationEnabled" class="rotation-icon-on" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 8v4l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Barra de progreso de tiempo -->
+                    <div class="progress-container" ng-if="nowPlaying && (nowPlaying.elapsed !== undefined || nowPlaying.duration)">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" ng-style="{'width': getProgressPercentage() + '%'}"></div>
+                        </div>
+                        <div class="progress-time">
+                            <span class="progress-time-elapsed">{{ formatTime(nowPlaying.elapsed) }}</span>
+                            <span class="progress-time-remaining" ng-if="nowPlaying.remaining">-{{ formatTime(nowPlaying.remaining) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Song History - Fila 3, Col 2 -->
+                <div class="song-history">
+                    <div class="song-history-header">
+                        <div class="song-history-header-left">
+                            <img src="images/recien.png" alt="Recién escuchaste..." class="song-history-label">
+                            <div class="song-history-divider"></div>
+                        </div>
+                    </div>
+                    <div class="song-history-items" ng-click="closeHistoryModal()">
+                        <div ng-repeat="item in songHistory | limitTo:6" 
+                             class="history-item"
+                             ng-class="{'animating-in': animatingHistoryItem && $index === 0, 'expanded': expandedHistoryIndex === $index}">
+                            <div class="history-art-wrapper" ng-click="$event.stopPropagation(); toggleHistoryItem($index)">
+                                <img ng-if="item.song && item.song.art" 
+                                     ng-src="{{ item.song.art }}" 
+                                     alt="{{ item.song.text }}" 
+                                     class="history-art"
+                                     onerror="this.style.display='none'">
+                                <div ng-if="expandedHistoryIndex === $index && item.song && item.song.text" 
+                                     class="history-modal"
+                                     ng-click="$event.stopPropagation()">
+                                    <div class="history-modal-content">
+                                        <div class="history-modal-text">
+                                            <div class="history-modal-artist" ng-if="item.song.artist">{{ item.song.artist }}</div>
+                                            <div class="history-modal-title" ng-if="item.song.title">{{ item.song.title }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -154,7 +212,6 @@
         <!-- Playing Next - Derecha superior -->
         <div class="playing-next">
             <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
-            <div class="song-history-divider"></div>
             <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
                  ng-src="{{ playingNext.song.art }}" 
                  alt="Playing Next" 
@@ -165,55 +222,6 @@
                  class="playing-next-text"
                  ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
                 {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
-            </div>
-        </div>
-
-        <!-- Song History - Barra inferior -->
-        <div class="song-history">
-            <div class="song-history-header">
-                <div class="song-history-header-left">
-                    <img src="images/recien.png" alt="Recién escuchaste..." class="song-history-label">
-                    <div class="song-history-divider"></div>
-                </div>
-                <div class="playing-next-mobile-wrapper">
-                    <div class="playing-next playing-next-mobile">
-                        <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
-                        <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
-                             ng-src="{{ playingNext.song.art }}" 
-                             alt="Playing Next" 
-                             class="playing-next-art"
-                             ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}"
-                             onerror="this.style.display='none'">
-                        <div ng-if="playingNext && playingNext.song && playingNext.song.text" 
-                             class="playing-next-text"
-                             ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
-                            {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="song-history-items" ng-click="closeHistoryModal()">
-                <div ng-repeat="item in songHistory | limitTo:6" 
-                     class="history-item"
-                     ng-class="{'animating-in': animatingHistoryItem && $index === 0, 'expanded': expandedHistoryIndex === $index}">
-                    <div class="history-art-wrapper" ng-click="$event.stopPropagation(); toggleHistoryItem($index)">
-                        <img ng-if="item.song && item.song.art" 
-                             ng-src="{{ item.song.art }}" 
-                             alt="{{ item.song.text }}" 
-                             class="history-art"
-                             onerror="this.style.display='none'">
-                        <div ng-if="expandedHistoryIndex === $index && item.song && item.song.text" 
-                             class="history-modal"
-                             ng-click="$event.stopPropagation()">
-                            <div class="history-modal-content">
-                                <div class="history-modal-text">
-                                    <div class="history-modal-artist" ng-if="item.song.artist">{{ item.song.artist }}</div>
-                                    <div class="history-modal-title" ng-if="item.song.title">{{ item.song.title }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
