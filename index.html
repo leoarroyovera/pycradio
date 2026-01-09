@@ -215,6 +215,203 @@
         </div>
     </div>
 
+    <!-- Botón menú hamburguesa para móvil -->
+    <button class="mobile-menu-toggle" ng-click="toggleMobileMenu()" title="Menú">
+        <svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+    </button>
+    
+    <!-- Overlay para cerrar menú móvil -->
+    <div class="mobile-menu-overlay" ng-class="{'visible': mobileMenuOpen}" ng-click="toggleMobileMenu()"></div>
+
+    <!-- Header de navegación - Siempre visible -->
+    <header class="site-header" ng-class="{'mobile-open': mobileMenuOpen}">
+        <div class="header-logo">
+            <a href="#" ng-click="closeAllSections(); $event.preventDefault()"></a>
+        </div>
+        <nav class="header-nav">
+            <ul class="header-nav-list">
+                <li><a href="#about" ng-click="toggleSection('about'); $event.preventDefault()" ng-class="{'active': visibleSection === 'about'}">¿Quiénes somos?</a></li>
+                <li><a href="#programacion" ng-click="toggleSection('programacion'); $event.preventDefault()" ng-class="{'active': visibleSection === 'programacion'}">Programas</a></li>
+                <li><a href="#equipo" ng-click="toggleSection('equipo'); $event.preventDefault()" ng-class="{'active': visibleSection === 'equipo'}">Equipo</a></li>
+                <li><a href="#pedidos" ng-click="toggleSection('pedidos'); $event.preventDefault()" ng-class="{'active': visibleSection === 'pedidos'}">Pedidos</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Secciones adicionales del sitio -->
+    <div class="site-sections-container">
+
+        <!-- Sección About -->
+        <section id="about" class="site-section" ng-class="{'visible': visibleSection === 'about'}">
+            <div class="section-content">
+                <h1>¿Quiénes somos?</h1>
+                <p class="lead">
+                    Somos cultura.<br>
+                    Somos arte.<br>
+                    Somos los que somos y los demás palomos.
+                </p>
+            </div>
+        </section>
+
+        <!-- Sección Programación -->
+        <section id="programacion" class="site-section" ng-class="{'visible': visibleSection === 'programacion'}">
+            <div class="section-content">
+                <h1>Programas</h1>
+                <div class="programs-grid">
+                    <div class="program-card">
+                        <img src="images/programacion/suenos.png" alt="Sueños de un hombre despierto" onerror="this.style.display='none'">
+                        <div class="program-info">
+                            <p>Noticias, música selecta y vacilona para despertar al humano asalariado.</p>
+                            <span>Lunes a Domingo | 05 am</span>
+                        </div>
+                    </div>
+                    <div class="program-card">
+                        <img src="images/programacion/antologia.png" alt="Antología" onerror="this.style.display='none'">
+                        <div class="program-info">
+                            <p>Grandes éxitos para jóvenes, adultos y ascensores.</p>
+                            <span>Lunes a Domingo | 09 am</span>
+                        </div>
+                    </div>
+                    <div class="program-card">
+                        <img src="images/programacion/noches.png" alt="Noches de Cucharitas" onerror="this.style.display='none'">
+                        <div class="program-info">
+                            <p>Ritmos apacibles para el Makin' Makin' Love.</p>
+                            <span>Domingo a Jueves | 21 horas</span>
+                        </div>
+                    </div>
+                    <div class="program-card">
+                        <img src="images/programacion/minue.png" alt="El Minué" onerror="this.style.display='none'">
+                        <div class="program-info">
+                            <p>A.K.A. El bailongo de Poesía y Cumbia Radio</p>
+                            <span>Viernes y Sábado | 21 horas</span>
+                        </div>
+                    </div>
+                </div>
+                <h2>Además en cualquier momento...</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <img src="images/avatars/mazza.jpg" alt="Profesor Mazza" onerror="this.style.display='none'">
+                        <h3>La Pildorita del Profesor Mazza</h3>
+                        <p>Pequeñas cápusulas informativas en voz del astrónomo más querido de Chile.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="images/avatars/poema.jpg" alt="Un poema a la vena" onerror="this.style.display='none'">
+                        <h3>Un poema a la vena</h3>
+                        <p>Los mejores poemas declamados por sus autores se conjungan en una danza con los artistas musicales de todos los tiempos.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="images/avatars/news.jpg" alt="Poesía y Cumbia News" onerror="this.style.display='none'">
+                        <h3>Poesía y Cumbia News</h3>
+                        <p>Infómate del acontecer nacional e internacional durante todo el día, salvo los findes en la noche porque ahí suenan los bailables y nadie quiere que le funen los dancing con noticias sobre las guerras.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Equipo -->
+        <section id="equipo" class="site-section" ng-class="{'visible': visibleSection === 'equipo'}">
+            <div class="section-content">
+                <h1>Equipo</h1>
+                <p class="team-intro">Estamos formados por un staff multidisciplinario con años de experiencia en las lides radiales (1 año y 2 meses aprox.).</p>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <img src="images/avatars/antonio.jpg" alt="Antonio Vera" onerror="this.style.display='none'">
+                        <h3>Antonio Vera</h3>
+                        <p class="role">Director, CEO y Semanero Designado</p>
+                        <ul>
+                            <li>Creador de Poesía y Cumbia <sub>Podcast</sub></li>
+                            <li>Creador de Viceversos <sub>Otro Podcast</sub></li>
+                            <li>1er lugar en ventas de Natura en el secano costero <sub>Enero 2020</sub></li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <img src="images/avatars/manuel.jpg" alt="Manuel Cerro" onerror="this.style.display='none'">
+                        <h3>Manuel Cerro</h3>
+                        <p class="role">Programador musical</p>
+                        <ul>
+                            <li>Trabajó en Radio Pudahuel <sub>Dos semanas</sub></li>
+                            <li>Tiene 4 hijos <sub>Reconocidos</sub></li>
+                            <li>Odia a Pablito Aguilera <sub>No es el único</sub></li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <img src="images/avatars/cirilo.jpg" alt="Cirilo Murruchuca" onerror="this.style.display='none'">
+                        <h3>Cirilo Murruchuca Kraissler</h3>
+                        <p class="role">Marketing y sandwiches</p>
+                        <ul>
+                            <li>No ha conseguido ningún auspiciador</li>
+                            <li>No sabe lo que es SEO</li>
+                            <li>Hace los mansos pancitos de pernil con queso caeza</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <img src="images/avatars/gina.jpg" alt="Gina McDogger" onerror="this.style.display='none'">
+                        <h3>Gina McDogger Soto</h3>
+                        <p class="role">Secretaria</p>
+                        <ul>
+                            <li>Le da los buenos días a Chat GPT</li>
+                            <li>Nunca ha dejado de responder una cadena</li>
+                            <li>Vende miel de ulmo <sup>$5000 el medio</sup></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Pedidos -->
+        <section id="pedidos" class="site-section" ng-class="{'visible': visibleSection === 'pedidos'}">
+            <div class="section-content">
+                <h1>¡Pide tu tema ahora!</h1>
+                <div class="iframe-container">
+                    <iframe src="https://a11.asurahosting.com/public/poesia_y_cumbia_radio/embed-requests?theme=dark" frameborder="0" allowtransparency="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer - Se muestra pero no se puede cerrar -->
+        <footer class="site-footer" ng-class="{'visible': visibleSection === 'footer'}">
+            <button class="close-footer-btn" ng-click="closeFooter()" title="Cerrar">
+                <svg viewBox="0 0 24 24" fill="white" width="24" height="24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <p>Poesía y Cumbia Radio forma parte de la Asociación Interamericana de Radios Poéticas y Cumbieras (AIRPC).</p>
+                    <ul class="footer-social">
+                        <li><a href="https://www.instagram.com/antonioverapoeta" target="_blank">Instagram</a></li>
+                        <li><a href="https://open.spotify.com/show/1T7raBcagKgp3ySsGu6Tbi" target="_blank">Spotify</a></li>
+                        <li><a href="https://www.youtube.com/watch?v=hVqPTJfZ7tI" target="_blank">YouTube</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p>
+                        Avenida O'Higgins 3179<br>
+                        Cabaña 25<br>
+                        Chillán Viejo, Chile
+                    </p>
+                    <p>
+                        <a href="mailto:nevadamotelchillan@gmail.com">nevadamotelchillan@gmail.com</a><br>
+                        <a href="tel:+56422261000">Tel.: (+56) 422261000</a>
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>©2026 Creado por <a href="https://www.instagram.com/antonioverapoeta" target="_blank">Antonio Vera Poeta</a></p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Botón para mostrar footer -->
+    <button class="toggle-footer-btn" ng-click="toggleSection('footer')" title="Ver información de contacto" ng-if="visibleSection !== 'footer'">
+        <svg viewBox="0 0 24 24" fill="white" width="20" height="20">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+    </button>
+
     <!-- Video player para el stream HLS (oculto, solo audio) -->
     <video id="videoPlayer" autoplay style="display: none;"></video>
 
@@ -234,6 +431,12 @@
             $scope.playingNext = null;
             $scope.songHistory = [];
             $scope.currentProgramImage = 'images/programas/default.png';
+            
+            // Variable para controlar qué sección está visible
+            $scope.visibleSection = null;
+            
+            // Variable para controlar menú móvil
+            $scope.mobileMenuOpen = false;
             
             // Variables para modal de carga
             $scope.showLoadingModal = true;
@@ -825,6 +1028,44 @@
             // Cerrar modal del historial al hacer click fuera
             $scope.closeHistoryModal = function() {
                 $scope.expandedHistoryIndex = null;
+            };
+
+            // Función para mostrar/ocultar una sección específica
+            $scope.toggleSection = function(sectionId) {
+                // El footer se muestra con toggleSection pero se cierra con closeFooter
+                if (sectionId === 'footer') {
+                    $scope.visibleSection = 'footer';
+                    document.body.style.overflow = 'auto';
+                    return;
+                }
+                
+                if ($scope.visibleSection === sectionId) {
+                    // Si la sección ya está visible, ocultarla
+                    $scope.visibleSection = null;
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    // Mostrar la nueva sección
+                    $scope.visibleSection = sectionId;
+                    document.body.style.overflow = 'auto';
+                }
+            };
+            
+            // Función para cerrar el footer
+            $scope.closeFooter = function() {
+                $scope.visibleSection = null;
+                document.body.style.overflow = 'hidden';
+            };
+            
+            // Función para cerrar todas las secciones
+            $scope.closeAllSections = function() {
+                $scope.visibleSection = null;
+                $scope.mobileMenuOpen = false;
+                document.body.style.overflow = 'hidden';
+            };
+            
+            // Función para toggle del menú móvil
+            $scope.toggleMobileMenu = function() {
+                $scope.mobileMenuOpen = !$scope.mobileMenuOpen;
             };
 
             // Función para reproducir/pausar
