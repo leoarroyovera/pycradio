@@ -209,23 +209,8 @@
             
         </div>
 
-        <!-- Playing Next - Derecha superior -->
-        <div class="playing-next">
-            <img src="images/siguiente.png" alt="Siguiente canción" class="playing-next-label">
-            <img ng-if="playingNext && playingNext.song && playingNext.song.art" 
-                 ng-src="{{ playingNext.song.art }}" 
-                 alt="Playing Next" 
-                 class="playing-next-art"
-                 ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}"
-                 onerror="this.style.display='none'">
-            <div ng-if="playingNext && playingNext.song && playingNext.song.text" 
-                 class="playing-next-text"
-                 ng-class="{'animating-out': animatingPlayingNext && previousPlayingNextId, 'animating-in': animatingPlayingNext && !previousPlayingNextId}">
-                {{ playingNext.song.artist }} -  {{ playingNext.song.title }}
-            </div>
-        </div>
 
-        <div class="loading" ng-if="error" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);">
+        <div class="loading-notification" ng-if="error" ng-class="{'show': error}">
             Error: {{ error }}
         </div>
     </div>
@@ -485,6 +470,11 @@
                             $scope.error = 'Error al cargar el stream';
                             $scope.loadingError = 'Error al cargar el stream';
                             $scope.showLoadingModal = true;
+                            
+                            // Ocultar error después de 2 segundos
+                            $timeout(function() {
+                                $scope.error = null;
+                            }, 2000);
                         });
                     });
                 } else {
@@ -493,6 +483,11 @@
                         $scope.error = 'HLS no es compatible con este navegador. Por favor usa un navegador compatible.';
                         $scope.loadingError = 'HLS no es compatible con este navegador. Por favor usa un navegador compatible.';
                         $scope.showLoadingModal = true;
+                        
+                        // Ocultar error después de 2 segundos
+                        $timeout(function() {
+                            $scope.error = null;
+                        }, 2000);
                     });
                 }
             }
@@ -566,19 +561,7 @@
                                         // Detener actualización del tiempo de la canción anterior
                                         stopTimeUpdate();
                                         
-                                        // Activar animación de salida en elementos actuales
-                                        $scope.animatingNowPlaying = true;
-                                        $scope.animatingPlayingNext = true;
-                                        
-                                        // Detectar si hay un nuevo item en el historial que coincide con la canción anterior
-                                        if (data.song_history && data.song_history.length > 0) {
-                                            var firstHistoryId = data.song_history[0].song ? data.song_history[0].song.id : null;
-                                            if (firstHistoryId === previousNowPlayingId) {
-                                                $scope.animatingHistoryItem = true;
-                                            }
-                                        }
-                                        
-                                        // Pre-cargar imágenes antes de hacer la transición
+                                        // Pre-cargar imágenes ANTES de iniciar animaciones
                                         var imagesToPreload = [];
                                         if (data.now_playing && data.now_playing.song && data.now_playing.song.art) {
                                             imagesToPreload.push(data.now_playing.song.art);
@@ -587,43 +570,60 @@
                                             imagesToPreload.push(data.playing_next.song.art);
                                         }
                                         
-                                        // Esperar a que termine la animación de salida
-                                        $timeout(function() {
-                                            // Pre-cargar imágenes y luego actualizar
-                                            preloadImages(imagesToPreload, function() {
+                                        // Pre-cargar imágenes primero
+                                        preloadImages(imagesToPreload, function() {
+                                            // Una vez que las imágenes están cargadas, iniciar animaciones
+                                            
+                                            // Activar animación de salida en elementos actuales
+                                            $scope.animatingNowPlaying = true;
+                                            $scope.animatingPlayingNext = true;
+                                            
+                                            // Detectar si hay un nuevo item en el historial que coincide con la canción anterior
+                                            if (data.song_history && data.song_history.length > 0) {
+                                                var firstHistoryId = data.song_history[0].song ? data.song_history[0].song.id : null;
+                                                if (firstHistoryId === previousNowPlayingId) {
+                                                    $scope.animatingHistoryItem = true;
+                                                }
+                                            }
+                                            
+                                            // Esperar a que termine la animación de salida (600ms)
+                                            $timeout(function() {
                                                 // Limpiar IDs anteriores para activar animación de entrada
                                                 $scope.previousNowPlayingId = null;
                                                 $scope.previousPlayingNextId = null;
                                                 
-                                                // Actualizar datos
+                                                // Actualizar datos (las imágenes ya están cargadas)
                                                 $scope.nowPlaying = data.now_playing || null;
                                                 $scope.playingNext = data.playing_next || null;
                                                 $scope.songHistory = data.song_history || [];
                                                 
-                                                // Iniciar actualización del tiempo para la nueva canción
-                                                if ($scope.nowPlaying) {
-                                                    startTimeUpdate($scope.nowPlaying);
-                                                }
+                                                // Forzar digest cycle para que Angular renderice los nuevos elementos
+                                                $scope.$apply();
                                                 
-                                                // Si es la primera carga exitosa, ocultar el modal de carga
-                                                if (isFirstLoad) {
-                                                    $scope.showLoadingModal = false;
-                                                    $scope.loadingError = null;
-                                                }
-                                                
-                                                // Activar animación de entrada en nuevos elementos
-                                                // (animatingNowPlaying ya está en true)
-                                                
-                                                // Remover clases de animación después de completar entrada
+                                                // Pequeño delay para asegurar que el DOM se actualizó
                                                 $timeout(function() {
-                                                    $scope.animatingNowPlaying = false;
-                                                    $scope.animatingPlayingNext = false;
-                                                    $scope.animatingHistoryItem = false;
-                                                    $scope.previousNowPlayingId = newNowPlayingId;
-                                                    $scope.previousPlayingNextId = newPlayingNextId;
-                                                }, 800);
-                                            });
-                                        }, 800);
+                                                    // Iniciar actualización del tiempo para la nueva canción
+                                                    if ($scope.nowPlaying) {
+                                                        startTimeUpdate($scope.nowPlaying);
+                                                    }
+                                                    
+                                                    // Si es la primera carga exitosa, ocultar el modal de carga
+                                                    if (isFirstLoad) {
+                                                        $scope.showLoadingModal = false;
+                                                        $scope.loadingError = null;
+                                                    }
+                                                    
+                                                    // Remover clases de animación después de completar entrada (1000ms)
+                                                    $timeout(function() {
+                                                        $scope.animatingNowPlaying = false;
+                                                        $scope.animatingPlayingNext = false;
+                                                        $scope.animatingHistoryItem = false;
+                                                        $scope.previousNowPlayingId = newNowPlayingId;
+                                                        $scope.previousPlayingNextId = newPlayingNextId;
+                                                    }, 2000);
+                                                }, 50);
+                                            }, 2000);
+                                        });
                                     } else {
                                         // Sin cambios, actualizar normalmente
                                         $scope.nowPlaying = data.now_playing || null;
@@ -679,7 +679,10 @@
                                 var songChanged = previousNowPlayingId && newNowPlayingId && previousNowPlayingId !== newNowPlayingId;
                                 
                                 if (songChanged) {
-                                    // Pre-cargar imágenes antes de hacer la transición
+                                    // Detener actualización del tiempo de la canción anterior
+                                    stopTimeUpdate();
+                                    
+                                    // Pre-cargar imágenes ANTES de iniciar animaciones
                                     var imagesToPreload = [];
                                     if (data.now_playing && data.now_playing.song && data.now_playing.song.art) {
                                         imagesToPreload.push(data.now_playing.song.art);
@@ -688,25 +691,57 @@
                                         imagesToPreload.push(data.playing_next.song.art);
                                     }
                                     
+                                    // Pre-cargar imágenes primero
                                     preloadImages(imagesToPreload, function() {
                                         $scope.$apply(function() {
-                                            $scope.nowPlaying = data.now_playing || null;
-                                            $scope.playingNext = data.playing_next || null;
-                                            $scope.songHistory = data.song_history || [];
+                                            // Una vez que las imágenes están cargadas, iniciar animaciones
                                             
-                                            // Si es la primera carga, iniciar actualización del tiempo
-                                            if (isFirstLoad && $scope.nowPlaying) {
-                                                startTimeUpdate($scope.nowPlaying);
+                                            // Activar animación de salida en elementos actuales
+                                            $scope.animatingNowPlaying = true;
+                                            $scope.animatingPlayingNext = true;
+                                            
+                                            // Detectar si hay un nuevo item en el historial que coincide con la canción anterior
+                                            if (data.song_history && data.song_history.length > 0) {
+                                                var firstHistoryId = data.song_history[0].song ? data.song_history[0].song.id : null;
+                                                if (firstHistoryId === previousNowPlayingId) {
+                                                    $scope.animatingHistoryItem = true;
+                                                }
                                             }
                                             
-                                            // Si es la primera carga exitosa, ocultar el modal de carga
-                                            if (isFirstLoad) {
-                                                $scope.showLoadingModal = false;
-                                                $scope.loadingError = null;
-                                            }
-                                            
-                                            previousNowPlayingId = newNowPlayingId;
-                                            previousPlayingNextId = newPlayingNextId;
+                                            // Esperar a que termine la animación de salida (600ms)
+                                            $timeout(function() {
+                                                // Limpiar IDs anteriores para activar animación de entrada
+                                                $scope.previousNowPlayingId = null;
+                                                $scope.previousPlayingNextId = null;
+                                                
+                                                // Actualizar datos (las imágenes ya están cargadas)
+                                                $scope.nowPlaying = data.now_playing || null;
+                                                $scope.playingNext = data.playing_next || null;
+                                                $scope.songHistory = data.song_history || [];
+                                                
+                                                // Pequeño delay para asegurar que el DOM se actualizó
+                                                $timeout(function() {
+                                                    // Iniciar actualización del tiempo para la nueva canción
+                                                    if ($scope.nowPlaying) {
+                                                        startTimeUpdate($scope.nowPlaying);
+                                                    }
+                                                    
+                                                    // Si es la primera carga exitosa, ocultar el modal de carga
+                                                    if (isFirstLoad) {
+                                                        $scope.showLoadingModal = false;
+                                                        $scope.loadingError = null;
+                                                    }
+                                                    
+                                                    // Remover clases de animación después de completar entrada (1000ms)
+                                                    $timeout(function() {
+                                                        $scope.animatingNowPlaying = false;
+                                                        $scope.animatingPlayingNext = false;
+                                                        $scope.animatingHistoryItem = false;
+                                                        $scope.previousNowPlayingId = newNowPlayingId;
+                                                        $scope.previousPlayingNextId = newPlayingNextId;
+                                                    }, 20000);
+                                                }, 50);
+                                            }, 2000);
                                         });
                                     });
                                 } else {
@@ -798,6 +833,11 @@
                 if (!videoPlayer) {
                     $scope.$apply(function() {
                         $scope.error = 'Reproductor no disponible';
+                        
+                        // Ocultar error después de 2 segundos
+                        $timeout(function() {
+                            $scope.error = null;
+                        }, 2000);
                     });
                     return;
                 }
@@ -817,6 +857,11 @@
                                 $scope.$apply(function() {
                                     $scope.isLoading = false;
                                     $scope.error = 'Error al iniciar la reproducción: ' + (error.message || error.name || 'Error desconocido');
+                                    
+                                    // Ocultar error después de 2 segundos
+                                    $timeout(function() {
+                                        $scope.error = null;
+                                    }, 2000);
                                 });
                             });
                         }
@@ -826,6 +871,11 @@
                     $scope.$apply(function() {
                         $scope.isLoading = false;
                         $scope.error = 'Error: ' + (e.message || e.name || 'Error desconocido');
+                        
+                        // Ocultar error después de 2 segundos
+                        $timeout(function() {
+                            $scope.error = null;
+                        }, 2000);
                     });
                 }
             };
