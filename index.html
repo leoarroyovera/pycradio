@@ -19,18 +19,17 @@
     <script src="lib/caph/3.1.0/caph-angular.min.js" type="text/javascript"></script>
 
     <!-- HLS.js library for HLS stream support (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="lib/hls.js"></script>
 </head>
 <body ng-controller="RadioController">
     <!-- Modal de carga -->
     <div class="loading-modal" ng-show="showLoadingModal">
         <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="loading-modal-logo">
+        <!-- Mostrar progreso cuando NO hay error (loadingError es null, undefined o vacío) -->
         <div class="loading-modal-progress" ng-if="!loadingError">
             Cargando...
         </div>
-        <div class="loading-modal-error" ng-if="loadingError">
-            {{ loadingError }}
-        </div>
+        
         <button ng-if="loadingError" 
                 class="loading-modal-retry-btn" 
                 ng-click="retryLoad()">
@@ -174,19 +173,20 @@
                             <div class="song-history-divider"></div>
                         </div>
                     </div>
-                    <div class="song-history-items" ng-click="closeHistoryModal()">
+                    <div class="song-history-items">
                         <div ng-repeat="item in songHistory | limitTo:6" 
                              class="history-item"
                              ng-class="{'animating-in': animatingHistoryItem && $index === 0, 'expanded': expandedHistoryIndex === $index}">
-                            <div class="history-art-wrapper" ng-click="$event.stopPropagation(); toggleHistoryItem($index)">
+                            <div class="history-art-wrapper" 
+                                 ng-mouseenter="showHistoryItem($index)"
+                                 ng-mouseleave="hideHistoryItem()">
                                 <img ng-if="item.song && item.song.art" 
                                      ng-src="{{ item.song.art }}" 
                                      alt="{{ item.song.text }}" 
                                      class="history-art"
                                      onerror="this.style.display='none'">
                                 <div ng-if="expandedHistoryIndex === $index && item.song && item.song.text" 
-                                     class="history-modal"
-                                     ng-click="$event.stopPropagation()">
+                                     class="history-modal">
                                     <div class="history-modal-content">
                                         <div class="history-modal-text">
                                             <div class="history-modal-artist" ng-if="item.song.artist">{{ item.song.artist }}</div>
@@ -242,10 +242,17 @@
 
     <!-- Secciones adicionales del sitio -->
     <div class="site-sections-container">
+        
+        <!-- Overlay para cerrar secciones al hacer click fuera -->
+        <div class="section-overlay" 
+             ng-class="{'visible': visibleSection && visibleSection !== 'footer'}" 
+             ng-click="handleBackKey()"
+             ng-if="visibleSection && visibleSection !== 'footer'">
+        </div>
 
         <!-- Sección About -->
         <section id="about" class="site-section" ng-class="{'visible': visibleSection === 'about'}">
-            <div class="section-content">
+            <div class="section-content" ng-click="$event.stopPropagation()">
                 <h1>¿Quiénes somos?</h1>
                 <p class="lead">
                     Somos cultura.<br>
@@ -257,7 +264,7 @@
 
         <!-- Sección Programación -->
         <section id="programacion" class="site-section" ng-class="{'visible': visibleSection === 'programacion'}">
-            <div class="section-content">
+            <div class="section-content" ng-click="$event.stopPropagation()">
                 <h1>Programas</h1>
                 <div class="programs-grid">
                     <div class="program-card">
@@ -312,7 +319,7 @@
 
         <!-- Sección Equipo -->
         <section id="equipo" class="site-section" ng-class="{'visible': visibleSection === 'equipo'}">
-            <div class="section-content">
+            <div class="section-content" ng-click="$event.stopPropagation()">
                 <h1>Equipo</h1>
                 <p class="team-intro">Estamos formados por un staff multidisciplinario con años de experiencia en las lides radiales (1 año y 2 meses aprox.).</p>
                 <div class="team-grid">
@@ -362,10 +369,10 @@
 
         <!-- Sección Pedidos -->
         <section id="pedidos" class="site-section" ng-class="{'visible': visibleSection === 'pedidos'}">
-            <div class="section-content">
+            <div class="section-content" ng-click="$event.stopPropagation()">
                 <h1>¡Pide tu tema ahora!</h1>
                 <div class="iframe-container">
-                    <iframe src="https://a11.asurahosting.com/public/poesia_y_cumbia_radio/embed-requests?theme=dark" frameborder="0" allowtransparency="true"></iframe>
+                    <iframe src="https://studio.loovacast.com/public/poesiaycumbia/embed-requests?theme=dark" frameborder="0" allowtransparency="true"></iframe>
                 </div>
             </div>
         </section>
@@ -412,6 +419,26 @@
         </svg>
     </button>
 
+    <!-- Modal de confirmación de cierre -->
+    <div class="exit-confirm-modal" ng-class="{'visible': showExitConfirmModal}" ng-if="showExitConfirmModal">
+        <div class="exit-confirm-content" ng-click="$event.stopPropagation()">
+            <div class="exit-confirm-header">
+                <h2>¿Cerrar aplicación?</h2>
+            </div>
+            <div class="exit-confirm-body">
+                <p>¿Estás seguro de que deseas cerrar la aplicación?</p>
+            </div>
+            <div class="exit-confirm-buttons">
+                <button class="exit-confirm-btn exit-confirm-no tizen-focusable" ng-click="cancelExit()">
+                    <span>No</span>
+                </button>
+                <button class="exit-confirm-btn exit-confirm-yes tizen-focusable" ng-click="closeApplication()">
+                    <span>Sí</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Video player para el stream HLS (oculto, solo audio) -->
     <video id="videoPlayer" autoplay style="display: none;"></video>
 
@@ -419,8 +446,8 @@
         var app = angular.module('RadioApp', []);
 
         app.controller('RadioController', function($scope, $timeout) {
-            //var radioUrl = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
-            var radioUrl = 'https://a11.asurahosting.com/hls/poesia_y_cumbia_radio/live.m3u8';
+            var radioUrl = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
+            //var radioUrl = 'https://a11.asurahosting.com/hls/poesia_y_cumbia_radio/live.m3u8';
             var hls = null;
 
             $scope.isPlaying = false;
@@ -457,8 +484,8 @@
             $scope.previousPlayingNextId = null;
             var previousProgramImage = null;
             
-            //var apiUrl = 'https://studio.loovacast.com/api/nowplaying/106';
-             var apiUrl = 'https://a11.asurahosting.com/api/nowplaying/129';
+            var apiUrl = 'https://studio.loovacast.com/api/nowplaying/106';
+            // var apiUrl = 'https://a11.asurahosting.com/api/nowplaying/129';
             var apiUpdateInterval = null;
             var timeUpdateInterval = null;
             var songStartTime = null;
@@ -1016,18 +1043,23 @@
                 $scope.rotationEnabled = !$scope.rotationEnabled;
             };
 
-            // Función para expandir/colapsar items del historial
+            // Función para mostrar item del historial al pasar el mouse
+            $scope.showHistoryItem = function(index) {
+                $scope.expandedHistoryIndex = index;
+            };
+            
+            // Función para ocultar item del historial al quitar el mouse
+            $scope.hideHistoryItem = function() {
+                $scope.expandedHistoryIndex = null;
+            };
+            
+            // Función para expandir/colapsar items del historial (mantenida para compatibilidad con control remoto)
             $scope.toggleHistoryItem = function(index) {
                 if ($scope.expandedHistoryIndex === index) {
                     $scope.expandedHistoryIndex = null;
                 } else {
                     $scope.expandedHistoryIndex = index;
                 }
-            };
-
-            // Cerrar modal del historial al hacer click fuera
-            $scope.closeHistoryModal = function() {
-                $scope.expandedHistoryIndex = null;
             };
 
             // Función para mostrar/ocultar una sección específica
@@ -1043,10 +1075,37 @@
                     // Si la sección ya está visible, ocultarla
                     $scope.visibleSection = null;
                     document.body.style.overflow = 'hidden';
+                    // Restaurar foco al menú
+                    $timeout(function() {
+                        $scope.focusedMenuIndex = 0;
+                        var menuElement = getCurrentMenuElement();
+                        if (menuElement) {
+                            setFocus(menuElement, 'menu');
+                        }
+                    }, 100);
                 } else {
                     // Mostrar la nueva sección
                     $scope.visibleSection = sectionId;
                     document.body.style.overflow = 'auto';
+                    // Mover foco a la primera tarjeta de la sección si tiene tarjetas
+                    $timeout(function() {
+                        var cards = [];
+                        if (sectionId === 'programacion') {
+                            cards = document.querySelectorAll('#programacion .program-card, #programacion .feature-card');
+                        } else if (sectionId === 'equipo') {
+                            cards = document.querySelectorAll('#equipo .team-card');
+                        }
+                        
+                        if (cards.length > 0) {
+                            $scope.focusedSectionCardIndex = 0;
+                            if (sectionId === 'programacion') {
+                                $scope.focusedSectionCardType = 'program';
+                            } else if (sectionId === 'equipo') {
+                                $scope.focusedSectionCardType = 'team';
+                            }
+                            setFocus(cards[0], 'section-card');
+                        }
+                    }, 300); // Delay para asegurar que el DOM se haya actualizado
                 }
             };
             
@@ -1061,12 +1120,579 @@
                 $scope.visibleSection = null;
                 $scope.mobileMenuOpen = false;
                 document.body.style.overflow = 'hidden';
+                // Limpiar foco de tarjetas de sección
+                $scope.focusedSectionCardIndex = -1;
+                $scope.focusedSectionCardType = null;
+                removeAllFocus();
             };
             
             // Función para toggle del menú móvil
             $scope.toggleMobileMenu = function() {
                 $scope.mobileMenuOpen = !$scope.mobileMenuOpen;
             };
+
+            // ============================================
+            // SISTEMA DE NAVEGACIÓN CON CONTROL REMOTO TIZEN OS
+            // ============================================
+            
+            // Variables para el sistema de navegación
+            $scope.focusedElement = null;
+            $scope.focusedElementType = null; // 'menu', 'control', 'history', 'section-card', 'footer-btn'
+            $scope.focusedMenuIndex = 0;
+            $scope.focusedControlIndex = 0;
+            $scope.focusedHistoryIndex = -1;
+            $scope.focusedSectionCardIndex = -1;
+            $scope.focusedSectionCardType = null; // 'program', 'feature', 'team'
+            $scope.navigationEnabled = true;
+            
+            // Variables para el sistema de confirmación de cierre
+            var lastBackPressTime = 0;
+            var backPressTimeout = null;
+            $scope.showExitConfirmModal = false;
+            
+            // Lista de elementos del menú principal
+            var menuItems = [
+                { id: 'about', name: '¿Quiénes somos?' },
+                { id: 'programacion', name: 'Programas' },
+                { id: 'equipo', name: 'Equipo' },
+                { id: 'pedidos', name: 'Pedidos' }
+            ];
+            
+            // Lista de controles navegables
+            var controlItems = [
+                { type: 'play-pause', element: null },
+                { type: 'rotation', element: null }
+            ];
+            
+            // Función para obtener el elemento del menú actual
+            function getCurrentMenuElement() {
+                var menuLinks = document.querySelectorAll('.header-nav-list a');
+                if (menuLinks.length > 0 && $scope.focusedMenuIndex >= 0 && $scope.focusedMenuIndex < menuLinks.length) {
+                    return menuLinks[$scope.focusedMenuIndex];
+                }
+                return null;
+            }
+            
+            // Función para obtener el elemento de control actual
+            function getCurrentControlElement() {
+                if ($scope.focusedControlIndex === 0) {
+                    return document.querySelector('.btn-play-pause');
+                } else if ($scope.focusedControlIndex === 1) {
+                    return document.querySelector('.btn-rotation');
+                }
+                return null;
+            }
+            
+            // Función para obtener el elemento del historial actual
+            function getCurrentHistoryElement() {
+                var historyItems = document.querySelectorAll('.history-art-wrapper');
+                if (historyItems.length > 0 && $scope.focusedHistoryIndex >= 0 && $scope.focusedHistoryIndex < historyItems.length) {
+                    return historyItems[$scope.focusedHistoryIndex];
+                }
+                return null;
+            }
+            
+            // Función para remover el foco de todos los elementos
+            function removeAllFocus() {
+                var focusedElements = document.querySelectorAll('.tizen-focused');
+                focusedElements.forEach(function(el) {
+                    el.classList.remove('tizen-focused');
+                });
+                $scope.focusedElement = null;
+            }
+            
+            // Función para establecer el foco en un elemento
+            function setFocus(element, type) {
+                removeAllFocus();
+                if (element) {
+                    element.classList.add('tizen-focused');
+                    element.focus();
+                    $scope.focusedElement = element;
+                    $scope.focusedElementType = type;
+                    
+                    // Scroll al elemento si es necesario
+                    element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+            
+            // Función para navegar en el menú principal (horizontal: izquierda/derecha)
+            function navigateMenu(direction) {
+                if (direction === 'right' || direction === 'left') {
+                    if (direction === 'right') {
+                        $scope.focusedMenuIndex = ($scope.focusedMenuIndex + 1) % menuItems.length;
+                    } else {
+                        $scope.focusedMenuIndex = ($scope.focusedMenuIndex - 1 + menuItems.length) % menuItems.length;
+                    }
+                    var menuElement = getCurrentMenuElement();
+                    if (menuElement) {
+                        setFocus(menuElement, 'menu');
+                    }
+                }
+            }
+            
+            // Función para navegar en los controles
+            function navigateControls(direction) {
+                if (direction === 'left' || direction === 'right') {
+                    if (direction === 'right') {
+                        $scope.focusedControlIndex = ($scope.focusedControlIndex + 1) % controlItems.length;
+                    } else {
+                        $scope.focusedControlIndex = ($scope.focusedControlIndex - 1 + controlItems.length) % controlItems.length;
+                    }
+                    var controlElement = getCurrentControlElement();
+                    if (controlElement) {
+                        setFocus(controlElement, 'control');
+                    }
+                }
+            }
+            
+            // Función para navegar en el historial
+            function navigateHistory(direction) {
+                var historyItems = document.querySelectorAll('.history-art-wrapper');
+                if (historyItems.length === 0) return;
+                
+                if (direction === 'right') {
+                    $scope.focusedHistoryIndex = Math.min($scope.focusedHistoryIndex + 1, historyItems.length - 1);
+                } else if (direction === 'left') {
+                    $scope.focusedHistoryIndex = Math.max($scope.focusedHistoryIndex - 1, 0);
+                }
+                
+                var historyElement = getCurrentHistoryElement();
+                if (historyElement) {
+                    setFocus(historyElement, 'history');
+                }
+            }
+            
+            // Función para cambiar entre diferentes grupos de navegación
+            function switchNavigationGroup(direction) {
+                // Si estamos en el menú, podemos ir a los controles o al historial
+                if ($scope.focusedElementType === 'menu') {
+                    if (direction === 'down') {
+                        // Ir a los controles
+                        $scope.focusedControlIndex = 0;
+                        var controlElement = getCurrentControlElement();
+                        if (controlElement) {
+                            setFocus(controlElement, 'control');
+                        }
+                    }
+                } else if ($scope.focusedElementType === 'control') {
+                    if (direction === 'up') {
+                        // Ir al menú
+                        var menuElement = getCurrentMenuElement();
+                        if (menuElement) {
+                            setFocus(menuElement, 'menu');
+                        }
+                    } else if (direction === 'down') {
+                        // Ir al historial si existe
+                        var historyItems = document.querySelectorAll('.history-art-wrapper');
+                        if (historyItems.length > 0) {
+                            $scope.focusedHistoryIndex = 0;
+                            var historyElement = getCurrentHistoryElement();
+                            if (historyElement) {
+                                setFocus(historyElement, 'history');
+                            }
+                        }
+                    }
+                } else if ($scope.focusedElementType === 'history') {
+                    if (direction === 'up') {
+                        // Ir a los controles
+                        $scope.focusedControlIndex = 0;
+                        var controlElement = getCurrentControlElement();
+                        if (controlElement) {
+                            setFocus(controlElement, 'control');
+                        }
+                    }
+                }
+            }
+            
+            // Función para activar el elemento enfocado
+            function activateFocusedElement() {
+                if (!$scope.focusedElement) return;
+                
+                if ($scope.focusedElementType === 'menu') {
+                    // Activar el menú correspondiente
+                    var menuItem = menuItems[$scope.focusedMenuIndex];
+                    if (menuItem) {
+                        $scope.toggleSection(menuItem.id);
+                        $scope.$apply();
+                    }
+                } else if ($scope.focusedElementType === 'control') {
+                    // Activar el control correspondiente
+                    if ($scope.focusedControlIndex === 0) {
+                        $scope.togglePlay();
+                        $scope.$apply();
+                    } else if ($scope.focusedControlIndex === 1) {
+                        $scope.toggleRotation();
+                        $scope.$apply();
+                    }
+                } else if ($scope.focusedElementType === 'history') {
+                    // Expandir/colapsar el item del historial
+                    if ($scope.focusedHistoryIndex >= 0) {
+                        $scope.toggleHistoryItem($scope.focusedHistoryIndex);
+                        $scope.$apply();
+                    }
+                }
+            }
+            
+            // Función para navegar entre tarjetas en las secciones
+            function navigateSectionCards(direction) {
+                var sectionId = $scope.visibleSection;
+                var cards = [];
+                var cardType = null;
+                
+                if (sectionId === 'programacion') {
+                    cards = document.querySelectorAll('#programacion .program-card, #programacion .feature-card');
+                    cardType = 'program';
+                } else if (sectionId === 'equipo') {
+                    cards = document.querySelectorAll('#equipo .team-card');
+                    cardType = 'team';
+                } else if (sectionId === 'about') {
+                    // La sección about no tiene tarjetas navegables
+                    return;
+                }
+                
+                if (cards.length === 0) return;
+                
+                // Inicializar índice si es necesario
+                if ($scope.focusedSectionCardIndex < 0 || $scope.focusedSectionCardType !== cardType) {
+                    $scope.focusedSectionCardIndex = 0;
+                    $scope.focusedSectionCardType = cardType;
+                }
+                
+                // Calcular número de columnas (aproximado basado en el ancho de la pantalla)
+                var screenWidth = window.innerWidth;
+                var cardsPerRow = screenWidth > 1200 ? 3 : screenWidth > 768 ? 2 : 1;
+                
+                if (direction === 'right') {
+                    $scope.focusedSectionCardIndex = Math.min($scope.focusedSectionCardIndex + 1, cards.length - 1);
+                } else if (direction === 'left') {
+                    $scope.focusedSectionCardIndex = Math.max($scope.focusedSectionCardIndex - 1, 0);
+                } else if (direction === 'down') {
+                    var nextIndex = $scope.focusedSectionCardIndex + cardsPerRow;
+                    if (nextIndex < cards.length) {
+                        $scope.focusedSectionCardIndex = nextIndex;
+                    }
+                } else if (direction === 'up') {
+                    var prevIndex = $scope.focusedSectionCardIndex - cardsPerRow;
+                    if (prevIndex >= 0) {
+                        $scope.focusedSectionCardIndex = prevIndex;
+                    }
+                }
+                
+                var cardElement = cards[$scope.focusedSectionCardIndex];
+                if (cardElement) {
+                    setFocus(cardElement, 'section-card');
+                }
+            }
+            
+            // Función para manejar la tecla Back (también se puede llamar desde clicks)
+            function handleBackKey() {
+                // Si hay una sección visible, cerrarla
+                if ($scope.visibleSection) {
+                    if ($scope.visibleSection === 'footer') {
+                        $scope.closeFooter();
+                    } else {
+                        $scope.closeAllSections();
+                        // Restaurar foco al menú
+                        $timeout(function() {
+                            $scope.focusedMenuIndex = 0;
+                            var menuElement = getCurrentMenuElement();
+                            if (menuElement) {
+                                setFocus(menuElement, 'menu');
+                            }
+                        }, 100);
+                    }
+                    $scope.$apply();
+                    return true; // Indica que se manejó el evento
+                }
+                // Si hay un item del historial expandido, cerrarlo
+                if ($scope.expandedHistoryIndex !== null) {
+                    $scope.expandedHistoryIndex = null;
+                    $scope.$apply();
+                    return true;
+                }
+                // Si estamos en la pantalla principal, manejar doble Back
+                if (!$scope.visibleSection && $scope.expandedHistoryIndex === null) {
+                    return handleDoubleBackPress();
+                }
+                return false;
+            }
+            
+            // Función para manejar el doble Back en pantalla principal
+            function handleDoubleBackPress() {
+                var currentTime = Date.now();
+                var timeDiff = currentTime - lastBackPressTime;
+                
+                // Limpiar timeout anterior si existe
+                if (backPressTimeout) {
+                    clearTimeout(backPressTimeout);
+                    backPressTimeout = null;
+                }
+                
+                // Si se presionó Back dentro de 2 segundos, mostrar modal de confirmación
+                if (timeDiff < 2000 && lastBackPressTime > 0) {
+                    // Segundo Back presionado - mostrar modal
+                    $scope.showExitConfirmModal = true;
+                    $scope.$apply();
+                    lastBackPressTime = 0; // Resetear
+                    return true;
+                } else {
+                    // Primer Back presionado - esperar segundo Back
+                    lastBackPressTime = currentTime;
+                    // Si no se presiona el segundo Back en 2 segundos, resetear
+                    backPressTimeout = setTimeout(function() {
+                        lastBackPressTime = 0;
+                    }, 2000);
+                    return false; // No prevenir el comportamiento por defecto aún
+                }
+            }
+            
+            // Función para cerrar la aplicación
+            $scope.closeApplication = function() {
+                try {
+                    // Intentar usar la API de Tizen para cerrar la aplicación
+                    if (typeof tizen !== 'undefined' && tizen.application) {
+                        var app = tizen.application.getCurrentApplication();
+                        if (app) {
+                            app.exit();
+                        }
+                    } else {
+                        // Fallback: intentar cerrar la ventana (puede no funcionar en Tizen)
+                        if (typeof window !== 'undefined' && window.close) {
+                            window.close();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error al cerrar la aplicación:', e);
+                    // Si falla, al menos cerrar el modal
+                    $scope.showExitConfirmModal = false;
+                    $scope.$apply();
+                }
+            };
+            
+            // Función para cancelar el cierre
+            $scope.cancelExit = function() {
+                $scope.showExitConfirmModal = false;
+                lastBackPressTime = 0;
+                if (backPressTimeout) {
+                    clearTimeout(backPressTimeout);
+                    backPressTimeout = null;
+                }
+                // Restaurar foco al menú
+                $timeout(function() {
+                    $scope.focusedMenuIndex = 0;
+                    var menuElement = getCurrentMenuElement();
+                    if (menuElement) {
+                        setFocus(menuElement, 'menu');
+                    }
+                }, 100);
+            };
+            
+            // Exponer la función handleBackKey al scope para poder usarla desde el HTML
+            $scope.handleBackKey = handleBackKey;
+            
+            // Manejar eventos de teclado del control remoto
+            document.addEventListener('keydown', function(event) {
+                if (!$scope.navigationEnabled || $scope.showLoadingModal) {
+                    return;
+                }
+                
+                var keyCode = event.keyCode || event.which;
+                var keyName = event.key;
+                
+                // Códigos de tecla para Tizen OS
+                // ArrowUp: 38, ArrowDown: 40, ArrowLeft: 37, ArrowRight: 39
+                // Enter: 13, Back: 10009 (Tizen) o Escape: 27
+                
+                // Manejar tecla Back
+                if (keyCode === 10009 || keyCode === 27 || keyName === 'Backspace' || keyName === 'Escape') {
+                    // Si el modal de confirmación está visible, cerrarlo con Back
+                    if ($scope.showExitConfirmModal) {
+                        event.preventDefault();
+                        $scope.cancelExit();
+                        $scope.$apply();
+                        return;
+                    }
+                    if (handleBackKey()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return;
+                    }
+                }
+                
+                // Si el modal de confirmación está visible, solo permitir navegación entre botones
+                if ($scope.showExitConfirmModal) {
+                    // Navegar entre botones del modal
+                    if (keyCode === 37 || keyName === 'ArrowLeft' || keyCode === 39 || keyName === 'ArrowRight') {
+                        event.preventDefault();
+                        var buttons = document.querySelectorAll('.exit-confirm-btn');
+                        var focusedButton = document.querySelector('.exit-confirm-btn.tizen-focused');
+                        var currentIndex = -1;
+                        
+                        if (focusedButton) {
+                            buttons.forEach(function(btn, index) {
+                                if (btn === focusedButton) {
+                                    currentIndex = index;
+                                }
+                            });
+                        }
+                        
+                        if (currentIndex === -1) {
+                            currentIndex = 0;
+                        } else {
+                            if (keyCode === 39 || keyName === 'ArrowRight') {
+                                currentIndex = (currentIndex + 1) % buttons.length;
+                            } else {
+                                currentIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+                            }
+                        }
+                        
+                        if (buttons[currentIndex]) {
+                            setFocus(buttons[currentIndex], 'exit-confirm-btn');
+                        }
+                        $scope.$apply();
+                        return;
+                    } else if (keyCode === 13 || keyName === 'Enter') {
+                        event.preventDefault();
+                        var focusedButton = document.querySelector('.exit-confirm-btn.tizen-focused');
+                        if (focusedButton) {
+                            focusedButton.click();
+                        }
+                        return;
+                    }
+                    // Bloquear otras teclas cuando el modal está visible
+                    event.preventDefault();
+                    return;
+                }
+                
+                // Si hay una sección visible, permitir navegación dentro de ella
+                if ($scope.visibleSection && $scope.visibleSection !== 'footer') {
+                    // Navegar dentro de las tarjetas de la sección
+                    if (keyCode === 37 || keyName === 'ArrowLeft') {
+                        event.preventDefault();
+                        navigateSectionCards('left');
+                        $scope.$apply();
+                        return;
+                    } else if (keyCode === 39 || keyName === 'ArrowRight') {
+                        event.preventDefault();
+                        navigateSectionCards('right');
+                        $scope.$apply();
+                        return;
+                    } else if (keyCode === 38 || keyName === 'ArrowUp') {
+                        event.preventDefault();
+                        navigateSectionCards('up');
+                        $scope.$apply();
+                        return;
+                    } else if (keyCode === 40 || keyName === 'ArrowDown') {
+                        event.preventDefault();
+                        navigateSectionCards('down');
+                        $scope.$apply();
+                        return;
+                    } else if (keyCode === 13 || keyName === 'Enter') {
+                        // Enter en secciones no hace nada por ahora, pero se puede expandir
+                        event.preventDefault();
+                        return;
+                    }
+                    return;
+                }
+                
+                // Si el footer está visible, permitir navegación en él
+                if ($scope.visibleSection === 'footer') {
+                    if (keyCode === 10009 || keyCode === 27) {
+                        handleBackKey();
+                        return;
+                    }
+                    // Por ahora, solo permitir cerrar el footer
+                    return;
+                }
+                
+                // Inicializar foco si no hay ninguno
+                if (!$scope.focusedElement) {
+                    $scope.focusedMenuIndex = 0;
+                    var menuElement = getCurrentMenuElement();
+                    if (menuElement) {
+                        setFocus(menuElement, 'menu');
+                        $scope.$apply();
+                    }
+                }
+                
+                // Navegación según la dirección
+                if (keyCode === 38 || keyName === 'ArrowUp') {
+                    // Flecha arriba
+                    event.preventDefault();
+                    if ($scope.focusedElementType === 'menu') {
+                        // Desde el menú, ir a los controles
+                        switchNavigationGroup('down');
+                    } else if ($scope.focusedElementType === 'control') {
+                        switchNavigationGroup('up');
+                    } else if ($scope.focusedElementType === 'history') {
+                        switchNavigationGroup('up');
+                    }
+                    $scope.$apply();
+                } else if (keyCode === 40 || keyName === 'ArrowDown') {
+                    // Flecha abajo
+                    event.preventDefault();
+                    if ($scope.focusedElementType === 'menu') {
+                        // Desde el menú, ir a los controles
+                        switchNavigationGroup('down');
+                    } else if ($scope.focusedElementType === 'control') {
+                        switchNavigationGroup('down');
+                    } else if ($scope.focusedElementType === 'history') {
+                        // No hay nada abajo del historial
+                    }
+                    $scope.$apply();
+                } else if (keyCode === 37 || keyName === 'ArrowLeft') {
+                    // Flecha izquierda
+                    event.preventDefault();
+                    if ($scope.focusedElementType === 'menu') {
+                        // Navegar en el menú horizontal (izquierda)
+                        navigateMenu('left');
+                    } else if ($scope.focusedElementType === 'control') {
+                        navigateControls('left');
+                    } else if ($scope.focusedElementType === 'history') {
+                        navigateHistory('left');
+                    }
+                    $scope.$apply();
+                } else if (keyCode === 39 || keyName === 'ArrowRight') {
+                    // Flecha derecha
+                    event.preventDefault();
+                    if ($scope.focusedElementType === 'menu') {
+                        // Navegar en el menú horizontal (derecha)
+                        navigateMenu('right');
+                    } else if ($scope.focusedElementType === 'control') {
+                        navigateControls('right');
+                    } else if ($scope.focusedElementType === 'history') {
+                        navigateHistory('right');
+                    }
+                    $scope.$apply();
+                } else if (keyCode === 13 || keyName === 'Enter') {
+                    // Enter
+                    event.preventDefault();
+                    activateFocusedElement();
+                }
+            });
+            
+            // Inicializar foco en el primer elemento del menú al cargar
+            $timeout(function() {
+                if ($scope.navigationEnabled && !$scope.showLoadingModal) {
+                    $scope.focusedMenuIndex = 0;
+                    var menuElement = getCurrentMenuElement();
+                    if (menuElement) {
+                        setFocus(menuElement, 'menu');
+                    }
+                }
+            }, 1000);
+            
+            // Inicializar foco en el modal de confirmación cuando se muestra
+            $scope.$watch('showExitConfirmModal', function(newVal) {
+                if (newVal) {
+                    $timeout(function() {
+                        var firstButton = document.querySelector('.exit-confirm-btn');
+                        if (firstButton) {
+                            setFocus(firstButton, 'exit-confirm-btn');
+                        }
+                    }, 100);
+                }
+            });
 
             // Función para reproducir/pausar
             $scope.togglePlay = function() {
