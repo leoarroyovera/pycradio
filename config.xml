@@ -13,7 +13,7 @@
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
     <tizen:privilege name="http://tizen.org/privilege/volume.set"/>
     <tizen:privilege name="http://tizen.org/privilege/tv.window"/>
- <!-- <access origin="https://studio.loovacast.com" subdomains="true"/>-->  
+ <!-- <access origin="https://poesiaycumbia.duckdns.org" subdomains="true"/>-->  
     <tizen:profile name="tv-samsung"/>
     <tizen:setting screen-orientation="landscape" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
 </widget>

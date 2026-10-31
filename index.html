@@ -372,7 +372,7 @@
             <div class="section-content" ng-click="$event.stopPropagation()">
                 <h1>¡Pide tu tema ahora!</h1>
                 <div class="iframe-container">
-                    <iframe src="https://studio.loovacast.com/public/poesiaycumbia/embed-requests?theme=dark" frameborder="0" allowtransparency="true"></iframe>
+                    <iframe src="https://poesiaycumbia.duckdns.org/public/poesia_y_cumbia_radio/embed-requests?theme=dark" frameborder="0" allowtransparency="true"></iframe>
                 </div>
             </div>
         </section>
@@ -446,8 +446,7 @@
         var app = angular.module('RadioApp', []);
 
         app.controller('RadioController', function($scope, $timeout) {
-            var radioUrl = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
-            //var radioUrl = 'https://a11.asurahosting.com/hls/poesia_y_cumbia_radio/live.m3u8';
+            var radioUrl = 'https://poesiaycumbia.duckdns.org/hls/poesia_y_cumbia_radio/live.m3u8';
             var hls = null;
 
             $scope.isPlaying = false;
@@ -484,8 +483,7 @@
             $scope.previousPlayingNextId = null;
             var previousProgramImage = null;
             
-            var apiUrl = 'https://studio.loovacast.com/api/nowplaying/106';
-            // var apiUrl = 'https://a11.asurahosting.com/api/nowplaying/129';
+            var apiUrl = 'https://poesiaycumbia.duckdns.org/api/nowplaying/poesia_y_cumbia_radio';
             var apiUpdateInterval = null;
             var timeUpdateInterval = null;
             var songStartTime = null;

@@ -1,6 +1,5 @@
 var videoPlayer = document.getElementById('videoPlayer');
-var channel = 'https://studio.loovacast.com/hls/poesiaycumbia/live.m3u8';
-//var channel = 'https://a11.asurahosting.com/hls/poesia_y_cumbia_radio/live.m3u8';
+var channel = 'https://poesiaycumbia.duckdns.org/hls/poesia_y_cumbia_radio/live.m3u8';
 
 function loadChannel(index) {
     if (Hls.isSupported()) {
