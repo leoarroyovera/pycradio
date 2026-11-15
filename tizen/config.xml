@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://poesiaycumbia.cl/PYC" version="1.0.0" viewmodes="maximized">
+    <!-- Mismo package/app id que la versión anterior: al instalar, reemplaza la app vieja en la TV -->
+    <tizen:application id="PeYwX5Y1V2.PYC" package="PeYwX5Y1V2" required_version="2.3"/>
+    <content src="index.html"/>
+    <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
+    <icon src="icon.png"/>
+    <name>Poesía y Cumbia Radio</name>
+    <description>Cumbia, grandes éxitos y poemas a la vena, en vivo desde Chillán Viejo.</description>
+    <author href="https://www.poesiaycumbia.cl">Poesía y Cumbia Radio</author>
+
+    <!-- El stream, la API de AzuraCast y las carátulas vienen de afuera -->
+    <access origin="*" subdomains="true"/>
+
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/network.get"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+
+    <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution" value="extensive"/>
+    <tizen:metadata key="http://samsung.com/tv/metadata/prelaunch.support" value="false"/>
+
+    <tizen:profile name="tv-samsung"/>
+    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

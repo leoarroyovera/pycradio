@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'cl.poesiaycumbia.radio'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'cl.poesiaycumbia.radio'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    buildTypes {
+        release {
+            // Firmado con la clave debug para poder instalar por ADB sin keystore propio
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main { assets.srcDir layout.buildDirectory.dir('generated/webassets') }
+    }
+
+    lint {
+        checkReleaseBuilds false
+    }
+}
+
+// La interfaz es la misma de la app Tizen: se copia tal cual desde ../../tizen
+def copyWebAssets = tasks.register('copyWebAssets', Copy) {
+    from('../../tizen') {
+        include 'index.html', 'css/**', 'js/**', 'fonts/**', 'images/**'
+    }
+    into layout.buildDirectory.dir('generated/webassets')
+}
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('Assets') || it.name.contains('Lint') }.configureEach {
+    dependsOn copyWebAssets
+}

@@ -1,0 +1,8 @@
+.tizen-rds/
+Debug/
+*.apk
+tizen/dist/
+androidtv/.gradle/
+androidtv/build/
+androidtv/app/build/
+androidtv/local.properties

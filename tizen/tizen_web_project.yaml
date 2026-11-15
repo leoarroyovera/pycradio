@@ -1,0 +1,46 @@
+# Project type [web_app, test_runner]
+project_type: web_app
+
+# Default profile, Tizen API version
+profile: tv-samsung
+api_version: "9.0"
+
+# Build type [Debug/ Release/ Test]
+build_type: Release
+
+# Output name for application
+output_name: PyCRadioTV
+
+# Output path for build
+output_path: ""
+
+# Enable size optimization of wgt for web workspace
+opt: false
+
+# Signing profile ("" = perfil activo: Profile-TV)
+signing_profile: ""
+
+trust_anchor: []
+
+files:
+  - config.xml
+  - icon.png
+  - index.html
+  - css/tv.css
+  - js/app.js
+  - js/hls.min.js
+  - fonts/*
+  - images/*
+
+excludes:
+  - .Build/*
+  - .buildResult/*
+  - .project
+  - .tproject
+  - .sign/*
+  - README.md
+  - build.ps1
+  - "*.wgt"
+  - dist/*
+
+deps: []

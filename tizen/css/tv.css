@@ -1,0 +1,972 @@
+/* ==========================================================================
+   Poesía y Cumbia Radio — app para Samsung TV (Tizen)
+   Escenario fijo de 1920×1080 escalado por JS. Mismo lenguaje que la web:
+   negro de película, rojo y amarillo de brocha, papel de portada; la poesía
+   en IM Fell English y la cumbia en Barlow Condensed.
+   Sin variables CSS, sin gap en flex ni conic-gradient: los televisores de
+   2017 (Tizen 3, Chromium 47) no los conocen.
+   Paleta: negro #000 · rojo #e1251b · amarillo #ffdd00 · papel #f1ebdd · humo #aaa59c
+   ========================================================================== */
+
+@font-face { font-family: 'Barlow Condensed'; font-weight: 400; src: url('../fonts/barlow-400.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; src: url('../fonts/barlow-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 800; src: url('../fonts/barlow-800.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-style: normal; src: url('../fonts/fell-regular.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-style: italic; src: url('../fonts/fell-italic.woff2') format('woff2'); }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+body {
+    color: #f1ebdd;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 30px;
+    line-height: 1.35;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+}
+
+ul, ol { list-style: none; }
+img { display: block; }
+button { font: inherit; color: inherit; border: 0; background: none; outline: none; }
+
+.stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #000 url('../images/bg.jpg') center / cover no-repeat;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+}
+
+/* La película de fondo, apagada para que no compita con el texto */
+.stage::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* Vista previa en el navegador (index.html?preview): sin transiciones */
+.preview * { transition: none !important; }
+
+/* ==========================================================================
+   Arranque
+   ========================================================================== */
+
+.splash {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 50;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    background: #000;
+    transition: opacity 0.8s ease, visibility 0s 0.8s;
+}
+
+.splash-logo { width: 760px; margin-bottom: 48px; }
+
+.splash-text {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 52px;
+    animation: latido 1.6s ease-in-out infinite;
+}
+
+body:not(.is-loading) .splash { opacity: 0; visibility: hidden; }
+
+@keyframes latido { 50% { opacity: 0.35; } }
+
+/* ==========================================================================
+   Barra superior
+   ========================================================================== */
+
+.topbar {
+    position: absolute;
+    top: 54px;
+    left: 96px;
+    right: 96px;
+    height: 80px;
+    z-index: 3;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+}
+
+.topbar-logo { height: 76px; width: auto; }
+
+.topbar-right {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+}
+
+.onair {
+    margin-right: 32px;
+    padding: 4px 18px 4px 40px;
+    position: relative;
+    border: 2px solid #e1251b;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #f1ebdd;
+    opacity: 0.35;
+    transition: opacity 0.4s ease;
+}
+
+.onair::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: #e1251b;
+}
+
+.is-playing .onair { opacity: 1; }
+.is-playing .onair::before { animation: latido 1.2s ease-in-out infinite; }
+
+.clock {
+    font-weight: 600;
+    font-size: 54px;
+    letter-spacing: 1px;
+    color: #f1ebdd;
+}
+
+/* ==========================================================================
+   Figura del programa
+   ========================================================================== */
+
+.program-figure {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 660px;
+    width: auto;
+    max-width: 520px;
+    opacity: 0.95;
+    transition: opacity 1s ease;
+}
+
+.program-figure.swap { opacity: 0; }
+
+/* ==========================================================================
+   Lo que suena ahora
+   ========================================================================== */
+
+/* Contenedor que se desplaza unos píxeles cada tanto para que la pantalla no se marque */
+.drift {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 2;
+    transition: -webkit-transform 8s ease-in-out, transform 8s ease-in-out;
+}
+
+.now {
+    position: absolute;
+    top: 200px;
+    left: 96px;
+    width: 1380px;
+    height: 470px;
+}
+
+.record-set {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 730px;
+    height: 470px;
+}
+
+.sleeve {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 470px;
+    height: 470px;
+    background: #1a1a1a;
+    box-shadow: 16px 0 36px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    transition: opacity 0.6s ease, -webkit-transform 0.6s ease, transform 0.6s ease;
+}
+
+.sleeve-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.has-art .sleeve-art { display: block; }
+.has-art .sleeve-plain { display: none; }
+
+.sleeve-plain {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-justify-content: flex-end; justify-content: flex-end;
+    height: 100%;
+    padding: 40px;
+    background: #f1ebdd;
+    color: #000;
+}
+
+.sleeve-plain-artist {
+    font-weight: 800;
+    font-size: 36px;
+    line-height: 1.1;
+    color: #e1251b;
+}
+
+.sleeve-plain-title {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 58px;
+    line-height: 1.05;
+    word-wrap: break-word;
+}
+
+.record {
+    position: absolute;
+    top: 10px;
+    left: 272px;
+    z-index: 1;
+    width: 450px;
+    height: 450px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #0b0b0b 0, #0b0b0b 2px, #191919 2px, #191919 3px);
+    box-shadow: 0 0 0 1px #222, 0 20px 44px rgba(0, 0, 0, 0.85);
+}
+
+/* Brillo del vinilo: dos franjas de luz que giran con el disco */
+.record-sheen {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.08) 45%, transparent 52%, transparent 70%, rgba(255, 255, 255, 0.05) 80%, transparent 88%);
+}
+
+.is-playing .record { animation: girar 1.8s linear infinite; }
+
+@keyframes girar { to { -webkit-transform: rotate(360deg); transform: rotate(360deg); } }
+
+.record-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 164px;
+    height: 164px;
+    margin: -82px 0 0 -82px;
+    border-radius: 50%;
+    background: #e1251b;
+    box-shadow: inset 0 0 0 5px #e1251b, inset 0 0 0 8px #ffdd00;
+    text-align: center;
+}
+
+.record-label-brand {
+    position: absolute;
+    top: 38px;
+    left: 0;
+    right: 0;
+    font-weight: 800;
+    font-size: 17px;
+    line-height: 1;
+    color: #ffdd00;
+}
+
+.record-label-side {
+    position: absolute;
+    bottom: 38px;
+    left: 0;
+    right: 0;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.record-hole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: #000;
+}
+
+/* Ficha de la canción */
+.track {
+    position: absolute;
+    top: 6px;
+    left: 790px;
+    width: 600px;
+    transition: opacity 0.6s ease, -webkit-transform 0.6s ease, transform 0.6s ease;
+}
+
+.changing .sleeve,
+.changing .track {
+    opacity: 0;
+    -webkit-transform: translateX(-30px);
+    transform: translateX(-30px);
+}
+
+.track-program {
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffdd00;
+}
+
+.track-title {
+    margin-top: 12px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 84px;
+    line-height: 1.02;
+    color: #f1ebdd;
+    /* Máximo tres líneas */
+    max-height: 258px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.track-artist {
+    margin-top: 16px;
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.1;
+    color: #aaa59c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progress {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    margin-top: 30px;
+    width: 560px;
+    visibility: hidden;
+}
+
+.has-duration .progress { visibility: visible; }
+
+.progress-time {
+    width: 70px;
+    font-weight: 600;
+    font-size: 24px;
+    color: #aaa59c;
+}
+
+.progress-time:last-child { text-align: right; }
+
+.progress-bar {
+    -webkit-flex: 1; flex: 1;
+    height: 6px;
+    margin: 0 14px;
+    background: rgba(241, 235, 221, 0.18);
+}
+
+.progress-fill {
+    width: 0;
+    height: 100%;
+    background: #e1251b;
+    transition: width 1s linear;
+}
+
+.next {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    margin-top: 34px;
+    visibility: hidden;
+}
+
+.has-next .next { visibility: visible; }
+
+.brush-label { height: 54px; width: auto; -webkit-flex: none; flex: none; }
+
+.next-art {
+    width: 72px;
+    height: 72px;
+    margin-left: 18px;
+    object-fit: cover;
+    display: none;
+}
+
+.has-next-art .next-art { display: block; }
+
+.next-text { margin-left: 18px; min-width: 0; line-height: 1.15; }
+
+.next-title {
+    display: block;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 380px;
+}
+
+.next-artist {
+    display: block;
+    font-weight: 600;
+    font-size: 24px;
+    color: #aaa59c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 380px;
+}
+
+/* ==========================================================================
+   Recién escuchaste
+   ========================================================================== */
+
+.history {
+    position: absolute;
+    top: 728px;
+    left: 96px;
+    width: 1300px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    visibility: hidden;
+    transition: opacity 0.8s ease;
+}
+
+.history-list {
+    display: -webkit-flex; display: flex;
+    margin-left: 26px;
+    overflow: hidden;
+}
+
+.history-item {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    width: 280px;
+    margin-right: 20px;
+    -webkit-flex: none; flex: none;
+}
+
+.history-art {
+    width: 72px;
+    height: 72px;
+    -webkit-flex: none; flex: none;
+    object-fit: cover;
+    background: #1a1a1a;
+}
+
+.history-plain {
+    background: #f1ebdd;
+    border-left: 8px solid #e1251b;
+}
+
+.history-text { margin-left: 14px; min-width: 0; line-height: 1.15; }
+
+.history-title,
+.history-artist,
+.history-time {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-title {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 26px;
+}
+
+.history-artist { font-weight: 600; font-size: 21px; color: #aaa59c; }
+.history-time { font-size: 18px; color: #c8a25a; }
+
+/* ==========================================================================
+   Menú inferior
+   ========================================================================== */
+
+.dock {
+    position: absolute;
+    left: 96px;
+    bottom: 76px;
+    z-index: 4;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    transition: opacity 0.8s ease, -webkit-transform 0.8s ease, transform 0.8s ease;
+}
+
+.dock-btn {
+    height: 76px;
+    margin-right: 18px;
+    padding: 0 30px;
+    border-radius: 999px;
+    border: 3px solid rgba(241, 235, 221, 0.25);
+    background: rgba(0, 0, 0, 0.55);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: #f1ebdd;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, -webkit-transform 0.15s ease, transform 0.15s ease;
+}
+
+.dock-play {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    padding: 0 38px 0 30px;
+    min-width: 250px;
+    background: #e1251b;
+    border-color: #e1251b;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Iconos dibujados con bordes: no dependen de fuentes de íconos */
+.icon-play {
+    width: 0;
+    height: 0;
+    margin-right: 18px;
+    border-style: solid;
+    border-width: 15px 0 15px 24px;
+    border-color: transparent transparent transparent currentColor;
+}
+
+.icon-pause {
+    display: none;
+    width: 24px;
+    height: 28px;
+    margin-right: 18px;
+    border-left: 8px solid currentColor;
+    border-right: 8px solid currentColor;
+}
+
+.is-playing .icon-play { display: none; }
+.is-playing .icon-pause { display: block; }
+
+/* Foco del control remoto */
+.is-focused {
+    background: #ffdd00 !important;
+    border-color: #ffdd00 !important;
+    color: #000 !important;
+    -webkit-transform: scale(1.08);
+    transform: scale(1.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   Modo ambiente: tras un rato sin tocar el control queda solo el disco
+   ========================================================================== */
+
+.ambient .dock {
+    opacity: 0;
+    -webkit-transform: translateY(40px);
+    transform: translateY(40px);
+}
+
+.ambient .history { opacity: 0.25; }
+
+/* ==========================================================================
+   Aviso
+   ========================================================================== */
+
+.toast {
+    position: absolute;
+    top: 160px;
+    left: 50%;
+    z-index: 30;
+    width: 1000px;
+    margin-left: -500px;
+    padding: 18px 32px;
+    border-left: 8px solid #e1251b;
+    background: rgba(0, 0, 0, 0.9);
+    font-size: 30px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s 0.4s;
+}
+
+.toast.visible { opacity: 1; visibility: visible; transition: opacity 0.4s ease; }
+
+/* ==========================================================================
+   Paneles
+   ========================================================================== */
+
+.panel {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 10;
+    padding: 70px 120px;
+    background: rgba(0, 0, 0, 0.97);
+    opacity: 0;
+    visibility: hidden;
+    -webkit-transform: translateY(40px);
+    transform: translateY(40px);
+    transition: opacity 0.35s ease, -webkit-transform 0.35s ease, transform 0.35s ease, visibility 0s 0.35s;
+}
+
+.panel.open {
+    opacity: 1;
+    visibility: visible;
+    -webkit-transform: none;
+    transform: none;
+    transition: opacity 0.35s ease, -webkit-transform 0.35s ease, transform 0.35s ease;
+}
+
+.panel-title {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 100px;
+    line-height: 1;
+    color: #f1ebdd;
+}
+
+.panel-title::after {
+    content: '';
+    display: block;
+    width: 140px;
+    height: 10px;
+    margin-top: 18px;
+    background: #e1251b;
+    box-shadow: 40px 6px 0 -2px #ffdd00;
+}
+
+.panel-back {
+    position: absolute;
+    top: 80px;
+    right: 120px;
+    height: 70px;
+    padding: 0 40px;
+    border-radius: 999px;
+    border: 3px solid #f1ebdd;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: -webkit-transform 0.15s ease, transform 0.15s ease;
+}
+
+.panel-subtitle {
+    margin: 48px 0 24px;
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffdd00;
+}
+
+.panel-lead {
+    margin-top: 34px;
+    max-width: 1300px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 40px;
+    line-height: 1.25;
+    color: #aaa59c;
+}
+
+/* Programas */
+.programs {
+    display: -webkit-flex; display: flex;
+    margin-top: 48px;
+}
+
+.program-card {
+    width: 400px;
+    margin-right: 26px;
+    font-size: 26px;
+    line-height: 1.3;
+    color: #aaa59c;
+}
+
+.program-card:last-child,
+.feature:last-child,
+.team-card:last-child { margin-right: 0; }
+
+.program-card img { width: 400px; height: 148px; margin-bottom: 14px; }
+
+.program-when {
+    margin-bottom: 6px;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #f1ebdd;
+}
+
+.features { display: -webkit-flex; display: flex; }
+
+.feature {
+    display: -webkit-flex; display: flex;
+    width: 540px;
+    margin-right: 30px;
+    font-size: 24px;
+    line-height: 1.3;
+    color: #aaa59c;
+}
+
+.feature img {
+    width: 110px;
+    height: 110px;
+    margin-right: 22px;
+    -webkit-flex: none; flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.feature h4 {
+    margin-bottom: 4px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 34px;
+    line-height: 1.1;
+    color: #f1ebdd;
+}
+
+/* Equipo: como los créditos de una película */
+.team {
+    display: -webkit-flex; display: flex;
+    margin-top: 56px;
+}
+
+.team-card {
+    width: 400px;
+    margin-right: 26px;
+    text-align: center;
+}
+
+.team-card img {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    -webkit-filter: grayscale(1) contrast(1.1);
+    filter: grayscale(1) contrast(1.1);
+    box-shadow: 0 0 0 6px #000, 0 0 0 9px #e1251b;
+}
+
+.team-card .role {
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffdd00;
+}
+
+.team-card h3 {
+    margin: 6px 0 18px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 44px;
+    line-height: 1.05;
+}
+
+.team-card li {
+    margin-bottom: 8px;
+    font-size: 24px;
+    line-height: 1.25;
+    color: #aaa59c;
+}
+
+.team-card small { font-size: 20px; color: #c8a25a; }
+
+/* Nosotros */
+.panel-center {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+}
+
+.manifesto {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 116px;
+    line-height: 1.12;
+    text-align: center;
+    color: #f1ebdd;
+}
+
+.manifesto span { color: #e1251b; }
+
+/* Pide un tema */
+.qr-block {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    margin-top: 80px;
+}
+
+.qr {
+    width: 440px;
+    height: 440px;
+    -webkit-flex: none; flex: none;
+    box-shadow: 0 0 0 14px #f1ebdd, 22px 22px 0 14px #e1251b;
+}
+
+.steps { margin-left: 110px; }
+
+.steps li {
+    position: relative;
+    margin-bottom: 44px;
+    padding-left: 100px;
+    max-width: 900px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 46px;
+    line-height: 1.2;
+}
+
+.steps b {
+    position: absolute;
+    left: 0;
+    top: -6px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #ffdd00;
+    color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 46px;
+    line-height: 72px;
+    text-align: center;
+}
+
+/* Contacto */
+.contact {
+    display: -webkit-flex; display: flex;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    -webkit-align-items: flex-start; align-items: flex-start;
+    margin-top: 70px;
+}
+
+.contact-text { max-width: 1100px; }
+
+.contact address {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1.2;
+    margin-bottom: 34px;
+}
+
+.contact-line { font-weight: 600; font-size: 40px; }
+
+.contact-social {
+    margin-top: 34px;
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #ffdd00;
+}
+
+.contact-foot {
+    margin-top: 60px;
+    font-size: 24px;
+    color: #aaa59c;
+}
+
+.contact-qr {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.contact-qr .qr { width: 360px; height: 360px; }
+
+.contact-qr figcaption {
+    margin-top: 44px;
+    font-weight: 600;
+    font-size: 30px;
+    color: #aaa59c;
+}
+
+/* ==========================================================================
+   Confirmación de salida
+   ========================================================================== */
+
+.exit {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 40;
+    display: none;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.exit.open {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+}
+
+.exit-box {
+    width: 920px;
+    padding: 64px 70px;
+    background: #f1ebdd;
+    color: #000;
+    text-align: center;
+    box-shadow: 24px 24px 0 #e1251b;
+}
+
+.exit-box h2 {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 84px;
+    line-height: 1;
+}
+
+.exit-box p { margin: 20px 0 44px; font-size: 34px; color: #4a463f; }
+
+.exit-buttons {
+    display: -webkit-flex; display: flex;
+    -webkit-justify-content: center; justify-content: center;
+}
+
+.exit-btn {
+    height: 80px;
+    margin: 0 12px;
+    padding: 0 44px;
+    border-radius: 999px;
+    border: 3px solid #000;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #000;
+    transition: -webkit-transform 0.15s ease, transform 0.15s ease;
+}
+
+.exit .is-focused {
+    background: #e1251b !important;
+    border-color: #e1251b !important;
+    color: #fff !important;
+}

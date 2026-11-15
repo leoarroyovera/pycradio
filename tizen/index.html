@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920">
+    <title>Poesía y Cumbia Radio</title>
+    <link rel="stylesheet" href="css/tv.css">
+</head>
+<body class="is-loading">
+
+<!-- Todo se dibuja en un escenario fijo de 1920×1080 que se escala a la pantalla -->
+<div id="stage" class="stage">
+
+    <!-- Arranque -->
+    <div id="splash" class="splash">
+        <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="splash-logo">
+        <p class="splash-text">Sintonizando…</p>
+    </div>
+
+    <!-- Barra superior -->
+    <header class="topbar">
+        <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="topbar-logo">
+        <div class="topbar-right">
+            <span id="onair" class="onair">En vivo</span>
+            <span id="clock" class="clock">--:--</span>
+        </div>
+    </header>
+
+    <!-- Figura del programa según horario (esquina inferior derecha) -->
+    <img id="program-figure" class="program-figure" src="images/programas/default.png" alt="">
+
+    <!-- Lo que suena ahora -->
+    <main id="drift" class="drift">
+        <section class="now">
+            <div id="record-set" class="record-set">
+                <div class="sleeve">
+                    <img id="art" class="sleeve-art" alt="">
+                    <div id="sleeve-plain" class="sleeve-plain">
+                        <span id="plain-artist" class="sleeve-plain-artist">Poesía y Cumbia</span>
+                        <span id="plain-title" class="sleeve-plain-title">Radio</span>
+                    </div>
+                </div>
+                <div class="record">
+                    <div class="record-sheen"></div>
+                    <div class="record-label">
+                        <span class="record-label-brand">Poesía y Cumbia</span>
+                        <span class="record-label-side">Lado A · 33 rpm</span>
+                        <span class="record-hole"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="track" class="track">
+                <p id="program" class="track-program">En el aire</p>
+                <h1 id="title" class="track-title">Poesía y Cumbia Radio</h1>
+                <p id="artist" class="track-artist">Chillán Viejo</p>
+
+                <div id="progress" class="progress">
+                    <span id="elapsed" class="progress-time">0:00</span>
+                    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                    <span id="duration" class="progress-time">0:00</span>
+                </div>
+
+                <div id="next" class="next">
+                    <img src="images/siguiente.png" alt="Siguiente" class="brush-label">
+                    <img id="next-art" class="next-art" alt="">
+                    <p class="next-text">
+                        <span id="next-title" class="next-title"></span>
+                        <span id="next-artist" class="next-artist"></span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recién escuchaste -->
+        <section id="history" class="history">
+            <img src="images/recien.png" alt="Recién escuchaste" class="brush-label">
+            <ol id="history-list" class="history-list"></ol>
+        </section>
+    </main>
+
+    <!-- Menú inferior: lo que se recorre con el control remoto -->
+    <nav id="dock" class="dock" data-layer="main">
+        <button class="dock-btn dock-play" data-focus data-action="toggle">
+            <span class="icon-play"></span><span class="icon-pause"></span>
+            <span id="play-label">Escuchar</span>
+        </button>
+        <button class="dock-btn" data-focus data-action="panel:programas">Programas</button>
+        <button class="dock-btn" data-focus data-action="panel:pedidos">Pide un tema</button>
+        <button class="dock-btn" data-focus data-action="panel:equipo">Equipo</button>
+        <button class="dock-btn" data-focus data-action="panel:nosotros">Nosotros</button>
+        <button class="dock-btn" data-focus data-action="panel:contacto">Contacto</button>
+    </nav>
+
+    <!-- Aviso de estado (errores, reconexión) -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ============ Paneles ============ -->
+
+    <section id="panel-programas" class="panel" data-layer="panel">
+        <h2 class="panel-title">Programas</h2>
+        <button class="panel-back" data-focus data-action="close">Volver</button>
+        <ul class="programs">
+            <li class="program-card">
+                <img src="images/programacion/suenos.png" alt="Sueños de un hombre despierto">
+                <p class="program-when">Lunes a domingo · 05:00</p>
+                <p>Noticias, música selecta y vacilona para despertar al humano asalariado.</p>
+            </li>
+            <li class="program-card">
+                <img src="images/programacion/antologia.png" alt="Antología">
+                <p class="program-when">Lunes a domingo · 09:00</p>
+                <p>Grandes éxitos para jóvenes, adultos y ascensores.</p>
+            </li>
+            <li class="program-card">
+                <img src="images/programacion/noches.png" alt="Noche de Cucharitas">
+                <p class="program-when">Domingo a jueves · 21:00</p>
+                <p>Ritmos apacibles para el Makin' Makin' Love.</p>
+            </li>
+            <li class="program-card">
+                <img src="images/programacion/minue.png" alt="El Minué">
+                <p class="program-when">Viernes y sábado · 21:00</p>
+                <p>A.K.A. el bailongo de Poesía y Cumbia Radio.</p>
+            </li>
+        </ul>
+        <h3 class="panel-subtitle">Y en cualquier momento…</h3>
+        <ul class="features">
+            <li class="feature">
+                <img src="images/avatars/mazza.jpg" alt="">
+                <div>
+                    <h4>La Pildorita del Profesor Maza</h4>
+                    <p>Pequeñas cápsulas informativas en la voz del astrónomo más querido de Chile.</p>
+                </div>
+            </li>
+            <li class="feature">
+                <img src="images/avatars/poema.jpg" alt="">
+                <div>
+                    <h4>Un poema a la vena</h4>
+                    <p>Los mejores poemas, declamados por sus autores, en una danza con los artistas musicales de todos los tiempos.</p>
+                </div>
+            </li>
+            <li class="feature">
+                <img src="images/avatars/news.jpg" alt="">
+                <div>
+                    <h4>Poesía y Cumbia News</h4>
+                    <p>El acontecer nacional e internacional todo el día, salvo los findes en la noche: ahí suenan los bailables.</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <section id="panel-equipo" class="panel" data-layer="panel">
+        <h2 class="panel-title">Equipo</h2>
+        <button class="panel-back" data-focus data-action="close">Volver</button>
+        <p class="panel-lead">Un staff multidisciplinario con años de experiencia en las lides radiales (1 año y 2 meses, aprox.).</p>
+        <ul class="team">
+            <li class="team-card">
+                <img src="images/avatars/antonio.jpg" alt="">
+                <p class="role">Director, CEO y semanero designado</p>
+                <h3>Antonio Vera</h3>
+                <ul>
+                    <li>Creador de Poesía y Cumbia <small>(podcast)</small></li>
+                    <li>Creador de Viceversos <small>(otro podcast)</small></li>
+                    <li>1.<sup>er</sup> lugar en ventas de Natura en el secano costero <small>(enero 2020)</small></li>
+                </ul>
+            </li>
+            <li class="team-card">
+                <img src="images/avatars/manuel.jpg" alt="">
+                <p class="role">Programador musical</p>
+                <h3>Manuel Cerro</h3>
+                <ul>
+                    <li>Trabajó en Radio Pudahuel <small>(dos semanas)</small></li>
+                    <li>Tiene 4 hijos <small>(reconocidos)</small></li>
+                    <li>Odia a Pablito Aguilera <small>(no es el único)</small></li>
+                </ul>
+            </li>
+            <li class="team-card">
+                <img src="images/avatars/cirilo.jpg" alt="">
+                <p class="role">Marketing y sándwiches</p>
+                <h3>Cirilo Murruchuca Kraissler</h3>
+                <ul>
+                    <li>No ha conseguido ningún auspiciador</li>
+                    <li>No sabe lo que es SEO</li>
+                    <li>Hace los mansos pancitos de pernil con queso caeza</li>
+                </ul>
+            </li>
+            <li class="team-card">
+                <img src="images/avatars/gina.jpg" alt="">
+                <p class="role">Secretaria</p>
+                <h3>Gina McDogger Soto</h3>
+                <ul>
+                    <li>Le da los buenos días a ChatGPT</li>
+                    <li>Nunca ha dejado de responder una cadena</li>
+                    <li>Vende miel de ulmo <small>($5.000 el medio)</small></li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <section id="panel-nosotros" class="panel panel-center" data-layer="panel">
+        <button class="panel-back" data-focus data-action="close">Volver</button>
+        <p class="manifesto">
+            Somos cultura.<br>
+            Somos arte.<br>
+            Somos los que somos<br>
+            <span>y los demás palomos.</span>
+        </p>
+    </section>
+
+    <section id="panel-pedidos" class="panel" data-layer="panel">
+        <h2 class="panel-title">Pide un tema</h2>
+        <button class="panel-back" data-focus data-action="close">Volver</button>
+        <div class="qr-block">
+            <img src="images/qr-pedidos.png" alt="Código QR para pedir canciones" class="qr">
+            <ol class="steps">
+                <li><b>1</b> Escanea el código con la cámara de tu teléfono.</li>
+                <li><b>2</b> Busca la canción en nuestra discoteca.</li>
+                <li><b>3</b> Pídela: entra a la cola y suena en los próximos temas, aquí mismo en tu tele.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="panel-contacto" class="panel" data-layer="panel">
+        <h2 class="panel-title">Contacto</h2>
+        <button class="panel-back" data-focus data-action="close">Volver</button>
+        <div class="contact">
+            <div class="contact-text">
+                <address>
+                    Avenida O'Higgins 3179, cabaña 25<br>
+                    Chillán Viejo, Chile
+                </address>
+                <p class="contact-line">nevadamotelchillan@gmail.com</p>
+                <p class="contact-line">(+56) 42 226 1000</p>
+                <p class="contact-social">Instagram · Spotify · YouTube</p>
+                <p class="contact-foot">
+                    Poesía y Cumbia Radio forma parte de la Asociación Interamericana de Radios Poéticas y Cumbieras (AIRPC).<br>
+                    ©2026 Creado por Antonio Vera Poeta
+                </p>
+            </div>
+            <figure class="contact-qr">
+                <img src="images/qr-instagram.png" alt="Código QR de Instagram" class="qr">
+                <figcaption>@antonioverapoeta</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- Confirmación de salida -->
+    <div id="exit" class="exit" data-layer="exit">
+        <div class="exit-box">
+            <h2>¿Cerrar la radio?</h2>
+            <p>La música se detiene al salir.</p>
+            <div class="exit-buttons">
+                <button class="exit-btn" data-focus data-action="stay">Seguir escuchando</button>
+                <button class="exit-btn exit-yes" data-focus data-action="quit">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="audio" preload="none"></audio>
+
+<script src="js/hls.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
