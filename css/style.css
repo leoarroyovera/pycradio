@@ -45,13 +45,29 @@ html {
 
 body {
     min-height: 100vh;
-    background: var(--negro) url('../images/bg.jpg') center / cover fixed no-repeat;
+    background: transparent;
     color: var(--papel);
     font-family: var(--cumbia);
     font-size: var(--t-s);
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+}
+
+/* Fondo fijo en su propia capa: con background-attachment:fixed los navegadores móviles
+   lo reescalan/rebotan al empezar la reproducción (el disco gira y repinta la página) */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    background: var(--negro) url('../images/bg.jpg') center / cover no-repeat;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    pointer-events: none;
 }
 
 body.section-open,
