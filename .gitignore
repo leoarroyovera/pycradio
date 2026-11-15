@@ -6,3 +6,7 @@ androidtv/.gradle/
 androidtv/build/
 androidtv/app/build/
 androidtv/local.properties
+androidmobile/.gradle/
+androidmobile/build/
+androidmobile/app/build/
+androidmobile/local.properties
