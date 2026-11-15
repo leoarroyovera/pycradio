@@ -34,6 +34,9 @@ public class MainActivity extends Activity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        // La interfaz mide 1920x1080 (meta viewport): que el WebView la ajuste a toda la pantalla
+        s.setUseWideViewPort(true);
+        s.setLoadWithOverviewMode(true);
         s.setAllowFileAccess(true);
         // La API de AzuraCast se consulta desde file:// (mismo código que en Tizen)
         s.setAllowUniversalAccessFromFileURLs(true);

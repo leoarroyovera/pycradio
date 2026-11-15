@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -42,6 +43,8 @@ public class MainActivity extends Activity {
 
         web = new WebView(this);
         web.setBackgroundColor(Color.BLACK);
+        // Sin efecto de rebote/brillo al llegar al borde de la página
+        web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         setContentView(web, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -65,6 +68,13 @@ public class MainActivity extends Activity {
                     startActivity(new Intent(Intent.ACTION_VIEW, req.getUrl()));
                 } catch (Exception ignored) { }
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView v, String url) {
+                // Evita el rebote (overscroll) también dentro de la página
+                v.evaluateJavascript("document.documentElement.style.overscrollBehavior='none';"
+                        + "document.body.style.overscrollBehavior='none';", null);
             }
 
             @Override
