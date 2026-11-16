@@ -321,6 +321,7 @@
     /* Genius (js/genius.js y módulos que lo usan): fondo vivo, funda de respaldo, standby,
        créditos, ficha, versiones y sello de efemérides. Todo es opcional: si un módulo o
        la red falla, la pantalla queda como siempre. */
+    var geniusListo = false;
     var genius = null, standby = null, contraportada = null, ficha = null, versiones = null, efemeride = null;
 
     function iniciarGenius() {
@@ -351,13 +352,34 @@
         if (!visible && focused === b) { focusAt(0); }
     }
 
+    // Cada pieza va aparte: si una falla, la radio y las demás siguen
+    function aislar(fn) {
+        try { fn(); } catch (e) { avisarError(e); }
+    }
+
     function cancionGenius(song, hasArt) {
-        if (genius) { genius.cancion(song, hasArt); }
-        if (standby) { standby.cancion(song, hasArt ? song.art : null); }
-        if (contraportada) { contraportada.cancion(song); }
-        if (ficha) { ficha.cancion(song); }
-        if (versiones) { versiones.cancion(song); }
-        if (efemeride) { efemeride.cancion(song); }
+        aislar(function () { if (genius) { genius.cancion(song, hasArt); } });
+        aislar(function () { if (standby) { standby.cancion(song, hasArt ? song.art : null); } });
+        aislar(function () { if (contraportada) { contraportada.cancion(song); } });
+        aislar(function () { if (ficha) { ficha.cancion(song); } });
+        aislar(function () { if (versiones) { versiones.cancion(song); } });
+        aislar(function () { if (efemeride) { efemeride.cancion(song); } });
+    }
+
+    // Un error en las piezas de Genius se muestra una vez en pantalla (para poder reportarlo)
+    var errorAvisado = false;
+    function avisarError(e) {
+        if (errorAvisado) { return; }
+        errorAvisado = true;
+        try { toast('Error: ' + (e && e.message ? e.message : e), 12000); } catch (x) {}
+    }
+
+    // Las piezas de Genius arrancan cuando la radio ya está sonando y mostrando datos
+    function arrancarGenius() {
+        aislar(iniciarGenius);
+        aislar(function () {
+            if (current && current.song) { cancionGenius(current.song, !isDefaultArt(current.song.art)); }
+        });
     }
 
     function renderNow(np) {
@@ -378,7 +400,7 @@
         }
         setClass(stage, 'has-art', hasArt);
         tickProgress();
-        cancionGenius(song, hasArt);
+        if (geniusListo) { cancionGenius(song, hasArt); }
     }
 
     function renderNext(next) {
@@ -433,7 +455,7 @@
         text('elapsed', formatTime(elapsed));
         text('duration', formatTime(songClock.duration));
         $('progress-fill').style.width = (elapsed / songClock.duration * 100).toFixed(2) + '%';
-        if (standby) { standby.progreso(elapsed, songClock.duration); }
+        if (standby) { try { standby.progreso(elapsed, songClock.duration); } catch (e) {} }
         tickPopTips();
     }
 
@@ -691,7 +713,6 @@
 
     updateClock();
     updateFigure();
-    iniciarGenius();
     fetchNowPlaying();
     // Vista previa en el navegador: index.html?preview[&panel=programas|equipo|...|exit]
     var qs = window.location.search;
@@ -702,6 +723,11 @@
         // Una radio en la tele se prende sonando
         play();
     }
+    // Genius va después: primero la radio. Arranca 5 s tras abrir la app, con lo que haya al aire
+    setTimeout(function () {
+        geniusListo = true;
+        arrancarGenius();
+    }, 5000);
     // Si la API tarda, igual se muestra la pantalla
     setTimeout(function () {
         reveal();

@@ -111,16 +111,62 @@
 
     // --- Red y caché ----------------------------------------------------------------
 
+    // Llamadas a Genius de a pocas: la TV es lenta y no debe competir con el audio ni con
+    // la API de la radio. Hasta SIMULTANEAS a la vez; el resto espera su turno.
+    var SIMULTANEAS = 2;
+    var activas = 0, cola = [];
+
+    function despachar() {
+        var t;
+        while (activas < SIMULTANEAS && cola.length) {
+            t = cola.shift();
+            activas++;
+            lanzar(t[0], t[1], t[2]);
+        }
+    }
+
+    function lanzar(ruta, ok, mal) {
+        var xhr = new XMLHttpRequest(), fin = false;
+        // Cada llamada termina una sola vez y libera su lugar en la cola
+        function cerrar(fn, arg) {
+            if (fin) { return; }
+            fin = true;
+            activas--;
+            try { fn(arg); } catch (e) { /* un fallo de pantalla no debe frenar la cola */ }
+            despachar();
+        }
+        try {
+            xhr.open('GET', API + ruta + (ruta.indexOf('?') === -1 ? '?' : '&') + 'access_token=' + TOKEN);
+            xhr.timeout = 15000;
+            xhr.onload = function () {
+                if (xhr.status !== 200) { cerrar(mal, xhr.status); return; }
+                var datos = null;
+                try { datos = JSON.parse(xhr.responseText).response; } catch (e) { cerrar(mal, 'json'); return; }
+                cerrar(ok, datos);
+            };
+            xhr.onerror = xhr.ontimeout = function () { cerrar(mal, 'red'); };
+            xhr.send();
+        } catch (e) { cerrar(mal, 'error'); }
+    }
+
     function pedir(ruta, ok, mal) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', API + ruta + (ruta.indexOf('?') === -1 ? '?' : '&') + 'access_token=' + TOKEN);
-        xhr.timeout = 15000;
-        xhr.onload = function () {
-            if (xhr.status !== 200) { mal(xhr.status); return; }
-            try { ok(JSON.parse(xhr.responseText).response); } catch (e) { mal('json'); }
-        };
-        xhr.onerror = xhr.ontimeout = function () { mal('red'); };
-        xhr.send();
+        cola.push([ruta, ok, mal]);
+        despachar();
+    }
+
+    // Varias piezas piden lo mismo al cambiar la canción (fondo, standby, créditos, versiones,
+    // sello…): se hace una sola llamada y se reparte la respuesta
+    var enVuelo = {};
+    function compartir(clave, hacer, listo) {
+        if (enVuelo[clave]) { enVuelo[clave].push(listo); return; }
+        enVuelo[clave] = [listo];
+        hacer(function (a, b) {
+            var cbs = enVuelo[clave], i;
+            delete enVuelo[clave];
+            for (i = 0; i < cbs.length; i++) {
+                try { cbs[i](a, b); } catch (e) { /* una pieza que falla no afecta a las demás */ }
+            }
+        });
     }
 
     function leerCache(clave) {
@@ -174,6 +220,10 @@
     }
 
     function buscar(song, listo) {
+        compartir('b' + (song.id || norm(song.artist + ' ' + song.title)), function (fin) { buscarReal(song, fin); }, listo);
+    }
+
+    function buscarReal(song, listo) {
         var clave = song.id || norm(song.artist + ' ' + song.title);
         var guardado = leerCache(clave);
         if (guardado) { listo(guardado.d, true); return; }
@@ -275,6 +325,10 @@
 
     // Créditos para la contraportada (una llamada a /songs/:id, en caché como lo demás)
     function detalle(geniusId, listo) {
+        compartir('d' + geniusId, function (fin) { detalleReal(geniusId, fin); }, listo);
+    }
+
+    function detalleReal(geniusId, listo) {
         var clave = 'd' + geniusId, guardado = leerCache(clave);
         if (guardado) { listo(guardado.d); return; }
         pedir('/songs/' + geniusId + '?text_format=plain', function (r) {
@@ -320,6 +374,10 @@
 
     // Perfil del artista para la ficha (una llamada a /artists/:id, en caché)
     function artista(artistaId, listo) {
+        compartir('a' + artistaId, function (fin) { artistaReal(artistaId, fin); }, listo);
+    }
+
+    function artistaReal(artistaId, listo) {
         var clave = 'a' + artistaId, guardado = leerCache(clave);
         if (guardado) { listo(guardado.d); return; }
         pedir('/artists/' + artistaId + '?text_format=plain', function (r) {
@@ -344,6 +402,10 @@
     // (la API no entrega la letra completa). Devuelve [] si no hay; cada verso es un
     // arreglo de líneas. Los más votados primero.
     function versos(geniusId, listo) {
+        compartir('v' + geniusId, function (fin) { versosReal(geniusId, fin); }, listo);
+    }
+
+    function versosReal(geniusId, listo) {
         var clave = 'v' + geniusId, guardado = leerCache(clave);
         if (guardado) { listo(guardado.d || []); return; }
         pedir('/referents?song_id=' + geniusId + '&text_format=plain&per_page=50', function (r) {
