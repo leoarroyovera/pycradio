@@ -216,7 +216,8 @@ ol {
     flex-direction: column;
     justify-content: center;
     gap: clamp(32px, 6vh, 80px);
-    padding: clamp(110px, 16vh, 180px) calc(var(--figura) * 0.82) 40px var(--borde);
+    /* La figura va detrás del texto: solo se reserva parte de su ancho */
+    padding: clamp(110px, 16vh, 180px) calc(var(--figura) * 0.4) 40px var(--borde);
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -395,6 +396,17 @@ ol {
     overflow: hidden;
 }
 
+/* Títulos largos: letra más chica y más líneas, para leerlos completos */
+.track-title.title-long {
+    font-size: clamp(36px, 4.2vw, 88px);
+    -webkit-line-clamp: 4;
+}
+
+.track-title.title-xlong {
+    font-size: clamp(30px, 3.3vw, 70px);
+    -webkit-line-clamp: 5;
+}
+
 .track-artist {
     margin-top: 14px;
     font-weight: 600;
@@ -556,9 +568,11 @@ ol {
 
 .history-title,
 .history-artist {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .history-title {
@@ -612,6 +626,9 @@ ol {
     z-index: 0;
     width: var(--figura);
     pointer-events: none;
+    /* Se desvanece por la izquierda para que el texto pueda pasar encima */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 45%);
+    mask-image: linear-gradient(to right, transparent 0, #000 45%);
 }
 
 .program-image {
@@ -1119,6 +1136,12 @@ ol {
     :root {
         --funda: 46vw;
         --figura: 40vw;
+    }
+
+    /* En vertical la figura queda debajo del texto: sin desvanecer */
+    .program-image-container {
+        -webkit-mask-image: none;
+        mask-image: none;
     }
 
     .main-layout {
