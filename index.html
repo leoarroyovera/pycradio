@@ -25,6 +25,25 @@
 
     <!-- HLS.js library for HLS stream support -->
     <script src="lib/hls.js"></script>
+
+    <!-- Pop-Up Tips: el mismo módulo ES5 que usan las apps de TV -->
+    <script src="tizen/js/poptips.js"></script>
+
+    <!-- Genius: portada de respaldo y fondo con la foto del artista, pedidos en vivo -->
+    <script src="tizen/js/genius.js"></script>
+
+    <!-- Standby "Cartel de verso": afiche de la canción tras unos minutos sin tocar nada -->
+    <script src="tizen/js/standby.js"></script>
+
+    <!-- Contraportada: al tocar el disco la funda gira y muestra los créditos -->
+    <script src="tizen/js/contraportada.js"></script>
+
+    <!-- Ficha del artista: recorte de prensa al tocar su nombre -->
+    <script src="tizen/js/ficha.js"></script>
+
+    <!-- Árbol de versiones y sello de efemérides -->
+    <script src="tizen/js/versiones.js"></script>
+    <script src="tizen/js/efemeride.js"></script>
 </head>
 <body ng-controller="RadioController" ng-class="{'is-playing': isPlaying, 'section-open': visibleSection, 'menu-open': mobileMenuOpen}">
     <!-- Modal de carga -->
@@ -95,6 +114,7 @@
                 <h1 class="track-title"
                     ng-class="{'title-long': nowPlaying.song.title.length > 38, 'title-xlong': nowPlaying.song.title.length > 64}">{{ nowPlaying.song.title | titulo }}</h1>
                 <p class="track-artist">{{ nowPlaying.song.artist }}</p>
+                <div id="versiones" class="versiones" aria-live="off"></div>
 
                 <div class="now-playing-controls">
                     <button class="btn-play-pause" ng-click="togglePlay()" ng-disabled="isLoading && !isPlaying">
@@ -159,6 +179,15 @@
 
         <div class="loading-notification" ng-if="error" role="status">{{ error }}</div>
     </main>
+
+    <!-- Burbujas de datos curiosos de la canción (tizen/js/poptips.js, compartido con la TV) -->
+    <div id="poptips" class="poptips-capa" ng-class="{'is-changing': trackSwapping}"></div>
+
+    <!-- Fondo vivo: foto del artista desde Genius (tizen/js/genius.js) -->
+    <div id="genius-fondo" class="genius-fondo" aria-hidden="true"></div>
+
+    <!-- Standby: afiche con la foto del artista y un verso (tizen/js/standby.js) -->
+    <div id="standby" class="standby" aria-hidden="true"></div>
 
     <!-- Imagen del programa según horario -->
     <div class="program-image-container" aria-hidden="true">
@@ -331,6 +360,7 @@
                 </div>
                 <p class="footer-bottom">
                     Poesía y Cumbia Radio forma parte de la Asociación Interamericana de Radios Poéticas y Cumbieras (AIRPC).<br>
+                    Datos e imágenes de canciones y artistas gracias a <a href="https://genius.com" target="_blank" rel="noopener">Genius</a>.<br>
                     ©2026 Creado por <a href="https://www.instagram.com/antonioverapoeta" target="_blank" rel="noopener">Antonio Vera Poeta</a>
                 </p>
             </div>
@@ -1697,8 +1727,133 @@
                 }
             };
 
+            // Pop-Up Tips: burbujas con datos de la canción (song.custom_fields.tip1..3).
+            // Solo en pantallas anchas; en celular la capa está oculta por CSS.
+            var popTips = null;
+            var popTipsEmision = null;
+
+            function visible(sel) {
+                var el = document.querySelector(sel);
+                if (!el) { return null; }
+                var r = el.getBoundingClientRect();
+                return r.width > 40 && r.height > 40 && r.bottom > 0 && r.top < window.innerHeight ? r : null;
+            }
+
+            function iniciarPopTips() {
+                var capa = document.getElementById('poptips');
+                if (!window.PopTips || !capa) { return; }
+                popTips = window.PopTips.crear({
+                    contenedor: capa,
+                    margen: 16,
+                    margenSup: function () {
+                        var barra = document.querySelector('.topbar');
+                        return barra ? barra.getBoundingClientRect().bottom + 12 : 16;
+                    },
+                    anclas: [
+                        // Sobre la carátula
+                        function () {
+                            var r = visible('.now-playing .sleeve');
+                            return r && { x: r.left + r.width * 0.4, y: r.top + r.height * 0.55, lado: 'arriba' };
+                        },
+                        // Junto al título, hacia la derecha
+                        function () {
+                            var t = visible('.now-playing .track-title');
+                            var tr = visible('.now-playing .track');
+                            return t && tr && { x: Math.min(tr.right, t.left + t.width) + 8, y: t.top + t.height / 2, lado: 'der' };
+                        },
+                        // Lo "dice" la figura del programa (sale de su cabeza, sin tapar los controles)
+                        function () {
+                            var r = visible('.program-image');
+                            return r && { x: r.left + r.width * 0.6, y: r.top + r.height * 0.1, lado: 'arriba' };
+                        }
+                    ]
+                });
+            }
+
+            $scope.$watch(function () {
+                var np = $scope.nowPlaying;
+                return np && np.song ? [np.sh_id, np.song.id, np.elapsed, np.duration].join('|') : '';
+            }, function () {
+                if (!popTips) { return; }
+                var np = $scope.nowPlaying;
+                if (!np || !np.song) { popTips.limpiar(); return; }
+                // Misma canción dos veces seguidas = otra emisión: se reinicia
+                if (np.sh_id !== popTipsEmision) { popTips.limpiar(); popTipsEmision = np.sh_id; }
+                popTips.actualizar(np.song, np.elapsed || 0, np.duration || 0);
+            });
+
+            // Genius: al cambiar la canción pide imágenes y las hace aparecer con fundido
+            var genius = null;
+
+            var standby = null;
+            var contraportada = null;
+            var ficha = null;
+            var versiones = null;
+            var efemeride = null;
+
+            // Tiempo de la canción para el standby (barra en miniatura)
+            $scope.$watch(function () {
+                var np = $scope.nowPlaying;
+                return np ? Math.floor(np.elapsed || 0) : -1;
+            }, function () {
+                var np = $scope.nowPlaying;
+                if (standby && np && np.duration) { standby.progreso(np.elapsed || 0, np.duration); }
+            });
+
+            function iniciarGenius() {
+                if (!window.GeniusPYC) { return; }
+                genius = window.GeniusPYC.crear({
+                    fondo: document.getElementById('genius-fondo'),
+                    funda: function () { return document.querySelector('.now-playing .sleeve'); }
+                });
+                if (window.ContraportadaPYC) {
+                    contraportada = window.ContraportadaPYC.crear({
+                        funda: function () { return document.querySelector('.now-playing .sleeve'); },
+                        disparador: '.now-playing .record-set'
+                    });
+                }
+                if (window.FichaPYC) {
+                    ficha = window.FichaPYC.crear({
+                        disparador: '.now-playing .track-artist',
+                        pedidos: 'https://poesiaycumbia.duckdns.org/api/station/1/requests',
+                        alPedir: function () {
+                            $scope.$apply(function () {
+                                if ($scope.visibleSection !== 'pedidos') { $scope.toggleSection('pedidos'); }
+                            });
+                        }
+                    });
+                }
+                if (window.VersionesPYC) {
+                    versiones = window.VersionesPYC.crear({ contenedor: function () { return document.getElementById('versiones'); } });
+                }
+                if (window.EfemeridePYC) {
+                    efemeride = window.EfemeridePYC.crear({ contenedor: function () { return document.querySelector('.now-playing .record-set'); } });
+                }
+                if (window.StandbyPYC) {
+                    standby = window.StandbyPYC.crear({ capa: document.getElementById('standby'), minutos: 3 });
+                }
+            }
+
+            $scope.$watch(function () {
+                var np = $scope.nowPlaying;
+                return np && np.song ? np.song.id : '';
+            }, function () {
+                if (!genius) { return; }
+                var np = $scope.nowPlaying;
+                var conCaratula = !!(np && np.song && !$scope.isDefaultArt(np.song.art));
+                genius.cancion(np && np.song, conCaratula);
+                if (standby && np && np.song) { standby.cancion(np.song, conCaratula ? np.song.art : null); }
+                if (contraportada) { contraportada.cancion(np && np.song); }
+                if (ficha) { ficha.cancion(np && np.song); }
+                if (versiones) { versiones.cancion(np && np.song); }
+                if (efemeride) { efemeride.cancion(np && np.song); }
+            });
+
             // Inicializar cuando el controlador esté listo
             $timeout(function() {
+                iniciarPopTips();
+                iniciarGenius();
+
                 // Cargar datos de la API inmediatamente
                 fetchNowPlaying();
                 

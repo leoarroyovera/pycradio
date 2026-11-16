@@ -970,3 +970,120 @@ body:not(.is-loading) .splash { opacity: 0; visibility: hidden; }
     border-color: #e1251b !important;
     color: #fff !important;
 }
+
+/* ==========================================================================
+   Pop-Up Tips: burbujas de datos curiosos (js/poptips.js)
+   Globo de cómic: papel, borde negro grueso y sombra dura desplazada.
+   ========================================================================== */
+
+.poptips-capa {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 5;            /* sobre el contenido y el menú, bajo los paneles */
+    pointer-events: none;
+}
+
+.poptips-sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.poptip {
+    position: absolute;
+    width: 420px;
+    padding: 18px 24px 22px;
+    border: 5px solid #000;
+    border-radius: 26px;
+    background: #f1ebdd;
+    color: #000;
+    box-shadow: 12px 12px 0 #e1251b;
+    opacity: 0;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+}
+
+.poptip-c1 { box-shadow: 12px 12px 0 #ffdd00; }
+.poptip-c2 { box-shadow: 12px 12px 0 #c8a25a; }
+
+.poptip-chip {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 4px 14px 2px;
+    border: 3px solid #000;
+    border-radius: 6px;
+    background: #ffdd00;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.poptip-marca {
+    margin-right: 4px;
+    color: #e1251b;
+}
+
+.poptip-texto {
+    margin: 0;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 34px;
+    line-height: 1.22;
+}
+
+/* Cola: dos triángulos de bordes (negro detrás, papel delante) */
+.poptip-cola,
+.poptip-cola:after {
+    position: absolute;
+    width: 0; height: 0;
+    border-style: solid;
+    border-color: transparent;
+}
+.poptip-cola:after { content: ''; }
+
+.poptip-arriba .poptip-cola { bottom: -40px; border-width: 40px 18px 0 18px; border-top-color: #000; }
+.poptip-arriba .poptip-cola:after { left: -12px; top: -48px; border-width: 30px 12px 0 12px; border-top-color: #f1ebdd; }
+
+.poptip-abajo .poptip-cola { top: -40px; border-width: 0 18px 40px 18px; border-bottom-color: #000; }
+.poptip-abajo .poptip-cola:after { left: -12px; top: 18px; border-width: 0 12px 30px 12px; border-bottom-color: #f1ebdd; }
+
+.poptip-der .poptip-cola { left: -40px; border-width: 18px 40px 18px 0; border-right-color: #000; }
+.poptip-der .poptip-cola:after { top: -12px; left: 18px; border-width: 12px 30px 12px 0; border-right-color: #f1ebdd; }
+
+.poptip-izq .poptip-cola { right: -40px; border-width: 18px 0 18px 40px; border-left-color: #000; }
+.poptip-izq .poptip-cola:after { top: -12px; left: -48px; border-width: 12px 0 12px 30px; border-left-color: #f1ebdd; }
+
+/* Entrada con rebote ("bloop") y salida más rápida */
+.poptip-in {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    -webkit-animation: poptip-bloop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: poptip-bloop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.poptip-out {
+    opacity: 0;
+    -webkit-transform: scale(0.85);
+    transform: scale(0.85);
+    -webkit-transition: opacity 0.25s ease-in, -webkit-transform 0.25s ease-in;
+    transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+}
+
+@-webkit-keyframes poptip-bloop {
+    0%   { opacity: 0; -webkit-transform: scale(0); }
+    60%  { opacity: 1; -webkit-transform: scale(1.08); }
+    100% { opacity: 1; -webkit-transform: scale(1); }
+}
+@keyframes poptip-bloop {
+    0%   { opacity: 0; transform: scale(0); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.changing .poptips-capa { opacity: 0; }

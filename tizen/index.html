@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=1920">
     <title>Poesía y Cumbia Radio</title>
     <link rel="stylesheet" href="css/tv.css">
+    <link rel="stylesheet" href="css/genius-tv.css">
 </head>
 <body class="is-loading">
 
@@ -16,6 +17,9 @@
         <img src="images/logo.png" alt="Poesía y Cumbia Radio" class="splash-logo">
         <p class="splash-text">Sintonizando…</p>
     </div>
+
+    <!-- Fondo vivo: foto del artista en duotono, pedida a Genius (js/genius.js) -->
+    <div id="genius-fondo" class="genius-fondo"></div>
 
     <!-- Barra superior -->
     <header class="topbar">
@@ -54,6 +58,7 @@
                 <p id="program" class="track-program">En el aire</p>
                 <h1 id="title" class="track-title">Poesía y Cumbia Radio</h1>
                 <p id="artist" class="track-artist">Chillán Viejo</p>
+                <div id="versiones" class="versiones"></div>
 
                 <div id="progress" class="progress">
                     <span id="elapsed" class="progress-time">0:00</span>
@@ -85,12 +90,20 @@
             <span class="icon-play"></span><span class="icon-pause"></span>
             <span id="play-label">Escuchar</span>
         </button>
+        <button class="dock-btn" data-focus data-action="credits">Créditos</button>
+        <button class="dock-btn" data-focus data-action="artist">Artista</button>
         <button class="dock-btn" data-focus data-action="panel:programas">Programas</button>
         <button class="dock-btn" data-focus data-action="panel:pedidos">Pide un tema</button>
         <button class="dock-btn" data-focus data-action="panel:equipo">Equipo</button>
         <button class="dock-btn" data-focus data-action="panel:nosotros">Nosotros</button>
         <button class="dock-btn" data-focus data-action="panel:contacto">Contacto</button>
     </nav>
+
+    <!-- Burbujas de datos curiosos (js/poptips.js) -->
+    <div id="poptips" class="poptips-capa"></div>
+
+    <!-- Standby "Cartel de verso" (js/standby.js) -->
+    <div id="standby" class="standby"></div>
 
     <!-- Aviso de estado (errores, reconexión) -->
     <div id="toast" class="toast"></div>
@@ -233,6 +246,7 @@
                 <p class="contact-social">Instagram · Spotify · YouTube</p>
                 <p class="contact-foot">
                     Poesía y Cumbia Radio forma parte de la Asociación Interamericana de Radios Poéticas y Cumbieras (AIRPC).<br>
+                    Datos e imágenes de canciones y artistas gracias a Genius.<br>
                     ©2026 Creado por Antonio Vera Poeta
                 </p>
             </div>
@@ -259,6 +273,13 @@
 <audio id="audio" preload="none"></audio>
 
 <script src="js/hls.min.js"></script>
+<script src="js/poptips.js"></script>
+<script src="js/genius.js"></script>
+<script src="js/standby.js"></script>
+<script src="js/contraportada.js"></script>
+<script src="js/ficha.js"></script>
+<script src="js/versiones.js"></script>
+<script src="js/efemeride.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

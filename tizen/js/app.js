@@ -292,11 +292,14 @@
         renderNext(data.playing_next);
         renderHistory(data.song_history || []);
 
-        if (id === currentId) { return; }
+        if (id === currentId) { tickPopTips(); return; }
+        // Misma canción dos veces seguidas = otra emisión: las burbujas se reinician
+        if (popTips) { popTips.limpiar(); }
 
         var first = currentId === null;
         currentId = id;
         current = np;
+        tickPopTips();
 
         var urls = [];
         if (!isDefaultArt(np.song.art)) { urls.push(np.song.art); }
@@ -313,6 +316,48 @@
                 }, 600);
             });
         }
+    }
+
+    /* Genius (js/genius.js y módulos que lo usan): fondo vivo, funda de respaldo, standby,
+       créditos, ficha, versiones y sello de efemérides. Todo es opcional: si un módulo o
+       la red falla, la pantalla queda como siempre. */
+    var genius = null, standby = null, contraportada = null, ficha = null, versiones = null, efemeride = null;
+
+    function iniciarGenius() {
+        if (!window.GeniusPYC) { return; }
+        function funda() { return document.querySelector('.sleeve'); }
+        genius = window.GeniusPYC.crear({ fondo: $('genius-fondo'), funda: funda });
+        if (window.StandbyPYC) {
+            standby = window.StandbyPYC.crear({ capa: $('standby'), minutos: 2, alDespertar: wake });
+        }
+        // El botón Créditos solo existe cuando la canción tiene algo que mostrar
+        if (window.ContraportadaPYC) {
+            contraportada = window.ContraportadaPYC.crear({ funda: funda, alCambiar: function (hay) { botonMenu('credits', hay); } });
+        }
+        if (window.FichaPYC) {
+            // El botón Artista queda siempre en el menú; sin datos la ficha muestra solo el nombre
+            ficha = window.FichaPYC.crear({ tv: true, siempre: true, padre: stage, pedidos: BASE + '/api/station/1/requests' });
+        }
+        botonMenu('credits', false);
+        if (window.VersionesPYC) { versiones = window.VersionesPYC.crear({ contenedor: function () { return $('versiones'); } }); }
+        if (window.EfemeridePYC) { efemeride = window.EfemeridePYC.crear({ contenedor: function () { return $('record-set'); } }); }
+    }
+
+    function botonMenu(accion, visible) {
+        var b = document.querySelector('[data-action="' + accion + '"]');
+        if (!b) { return; }
+        setClass(b, 'oculto', !visible);
+        // Si el foco estaba en el botón que se fue, pasa al primero visible del menú
+        if (!visible && focused === b) { focusAt(0); }
+    }
+
+    function cancionGenius(song, hasArt) {
+        if (genius) { genius.cancion(song, hasArt); }
+        if (standby) { standby.cancion(song, hasArt ? song.art : null); }
+        if (contraportada) { contraportada.cancion(song); }
+        if (ficha) { ficha.cancion(song); }
+        if (versiones) { versiones.cancion(song); }
+        if (efemeride) { efemeride.cancion(song); }
     }
 
     function renderNow(np) {
@@ -333,6 +378,7 @@
         }
         setClass(stage, 'has-art', hasArt);
         tickProgress();
+        cancionGenius(song, hasArt);
     }
 
     function renderNext(next) {
@@ -387,6 +433,29 @@
         text('elapsed', formatTime(elapsed));
         text('duration', formatTime(songClock.duration));
         $('progress-fill').style.width = (elapsed / songClock.duration * 100).toFixed(2) + '%';
+        if (standby) { standby.progreso(elapsed, songClock.duration); }
+        tickPopTips();
+    }
+
+    /* Pop-Up Tips: datos curiosos de la canción (js/poptips.js). Las anclas
+       están en coordenadas del escenario de 1920×1080. */
+    var popTips = window.PopTips ? window.PopTips.crear({
+        contenedor: $('poptips'),
+        margen: 40,
+        anclas: [
+            // Sobre la funda del disco
+            function () { return { x: 286, y: 450, lado: 'arriba' }; },
+            // A la derecha del título
+            function () { return { x: 1430, y: 330, lado: 'der' }; },
+            // Lo "dice" la figura del programa
+            function () { return { x: 1500, y: 640, lado: 'izq' }; }
+        ]
+    }) : null;
+
+    function tickPopTips() {
+        if (!popTips || !current || !songClock) { return; }
+        var elapsed = Math.min(songClock.duration, songClock.elapsed + (Date.now() - songClock.at) / 1000);
+        popTips.actualizar(current.song, elapsed, songClock.duration);
     }
 
     /* Figura del programa según el horario (igual que la web) */
@@ -450,7 +519,9 @@
     function focusables() {
         var nodes = layerEl().querySelectorAll('[data-focus]');
         var list = [];
-        for (var i = 0; i < nodes.length; i++) { list.push(nodes[i]); }
+        for (var i = 0; i < nodes.length; i++) {
+            if (!hasClass(nodes[i], 'oculto')) { list.push(nodes[i]); }
+        }
         return list;
     }
 
@@ -472,6 +543,8 @@
         if (action === 'toggle') { togglePlay(); }
         else if (action.indexOf('panel:') === 0) { showPanel(action.slice(6)); }
         else if (action === 'close') { closePanel(); }
+        else if (action === 'credits') { if (contraportada) { contraportada.voltear(); } }
+        else if (action === 'artist') { if (ficha) { ficha.abrir(); } }
         else if (action === 'stay') { closeExit(); }
         else if (action === 'quit') { quit(); }
     }
@@ -530,6 +603,13 @@
         var code = e.keyCode;
         var wasAmbient = hasClass(body, 'ambient');
         wake();
+
+        // Ficha del artista abierta: Volver u OK la cierran; el resto no hace nada debajo
+        if (ficha && ficha.abierta && code !== KEY.PLAY_PAUSE && code !== KEY.PLAY && code !== KEY.PAUSE && code !== KEY.STOP) {
+            if (code === KEY.BACK || code === KEY.ESC || code === KEY.BACKSPACE || code === KEY.ENTER) { ficha.cerrar(); }
+            e.preventDefault();
+            return;
+        }
 
         switch (code) {
             case KEY.PLAY_PAUSE: togglePlay(); break;
@@ -611,6 +691,7 @@
 
     updateClock();
     updateFigure();
+    iniciarGenius();
     fetchNowPlaying();
     // Vista previa en el navegador: index.html?preview[&panel=programas|equipo|...|exit]
     var qs = window.location.search;

@@ -1186,3 +1186,1273 @@ ol {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ==========================================================================
+   Pop-Up Tips: burbujas de datos curiosos (tizen/js/poptips.js, compartido con la TV)
+   Globo de cómic: papel, borde negro grueso y sombra dura desplazada.
+   ========================================================================== */
+
+.poptips-capa {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;            /* sobre el contenido, bajo la barra superior */
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.poptips-capa.is-changing,
+body.section-open .poptips-capa {
+    opacity: 0;
+}
+
+.poptips-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.poptip {
+    position: absolute;
+    width: clamp(260px, 22vw, 380px);
+    padding: 14px 18px 16px;
+    border: 4px solid var(--negro);
+    border-radius: 22px;
+    background: var(--papel);
+    color: var(--negro);
+    box-shadow: 9px 9px 0 var(--rojo);
+    opacity: 0;
+    transform: scale(0);
+}
+
+.poptip-c1 { box-shadow: 9px 9px 0 var(--amarillo); }
+.poptip-c2 { box-shadow: 9px 9px 0 var(--oro); }
+
+.poptip-chip {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 3px 10px 1px;
+    border: 3px solid var(--negro);
+    border-radius: 6px;
+    background: var(--amarillo);
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: var(--t-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.15;
+}
+
+.poptip-marca {
+    margin-right: 3px;
+    color: var(--rojo);
+}
+
+.poptip-texto {
+    margin: 0;
+    font-family: var(--poesia);
+    font-size: clamp(17px, 1.2vw, 22px);
+    line-height: 1.3;
+}
+
+/* Cola: dos triángulos de bordes (negro detrás, papel delante) */
+.poptip-cola,
+.poptip-cola::after {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+}
+.poptip-cola::after { content: ''; }
+
+.poptip-arriba .poptip-cola { bottom: -40px; border-width: 40px 18px 0 18px; border-top-color: var(--negro); }
+.poptip-arriba .poptip-cola::after { left: -12px; top: -48px; border-width: 30px 12px 0 12px; border-top-color: var(--papel); }
+
+.poptip-abajo .poptip-cola { top: -40px; border-width: 0 18px 40px 18px; border-bottom-color: var(--negro); }
+.poptip-abajo .poptip-cola::after { left: -12px; top: 18px; border-width: 0 12px 30px 12px; border-bottom-color: var(--papel); }
+
+.poptip-der .poptip-cola { left: -40px; border-width: 18px 40px 18px 0; border-right-color: var(--negro); }
+.poptip-der .poptip-cola::after { top: -12px; left: 18px; border-width: 12px 30px 12px 0; border-right-color: var(--papel); }
+
+.poptip-izq .poptip-cola { right: -40px; border-width: 18px 0 18px 40px; border-left-color: var(--negro); }
+.poptip-izq .poptip-cola::after { top: -12px; left: -48px; border-width: 12px 0 12px 30px; border-left-color: var(--papel); }
+
+/* Entrada con rebote ("bloop") y salida más rápida */
+.poptip-in {
+    opacity: 1;
+    transform: scale(1);
+    animation: poptip-bloop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.poptip-out {
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+}
+
+@keyframes poptip-bloop {
+    0%   { opacity: 0; transform: scale(0); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* En celular no hay burbujas: la pantalla es chica para tapar cosas */
+@media (max-width: 900px) {
+    .poptips-capa { display: none; }
+}
+
+/* ==========================================================================
+   Genius (tizen/js/genius.js): fondo vivo y funda de respaldo
+   ========================================================================== */
+
+/* Foto del artista en duotono rojo/negro, como afiche serigrafiado: gris con contraste,
+   multiplicada por el rojo del logo, con trama de semitono, grano y viñeta. Queda
+   oscura a propósito: el protagonista sigue siendo el disco. */
+.genius-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--negro);
+    opacity: 0;
+    transition: opacity 2.5s ease;
+}
+
+.genius-fondo.visible {
+    opacity: 1;
+}
+
+.genius-fondo-capa {
+    position: absolute;
+    inset: 0;
+    background: center 25% / cover no-repeat;
+    filter: grayscale(1) contrast(1.4) brightness(0.9);
+    opacity: 0;
+    transition: opacity 2.5s ease;
+}
+
+.genius-fondo-capa.activa {
+    opacity: 1;
+}
+
+/* Rojo multiplicado: lo claro de la foto queda rojo, lo oscuro negro */
+.genius-fondo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--rojo);
+    mix-blend-mode: multiply;
+}
+
+/* Semitono + grano + viñeta (más oscura a la izquierda, donde va el disco) */
+.genius-fondo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background:
+        radial-gradient(circle, rgba(0, 0, 0, 0.55) 1.1px, transparent 1.6px) 0 0 / 5px 5px,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.15) 55%, rgba(0, 0, 0, 0.4) 100%),
+        radial-gradient(ellipse at 60% 40%, transparent 35%, rgba(0, 0, 0, 0.8) 95%);
+}
+
+/* Portada de Genius sobre la funda lisa: aparece con fundido cuando Genius responde */
+.genius-funda {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: opacity 1.4s ease, transform 1.4s ease;
+}
+
+.genius-funda.cargada {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Etiqueta de ?genius=demo */
+.genius-demo {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 2600;
+    max-width: calc(100vw - 32px);
+    padding: 6px 12px;
+    background: var(--amarillo);
+    color: var(--negro);
+    font-family: var(--cumbia);
+    font-weight: 700;
+    font-size: var(--t-xs);
+    letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   Standby "Cartel de verso" (tizen/js/standby.js)
+   Afiche serigrafiado: foto del artista en duotono rojo/negro con trama gruesa,
+   el verso en IM Fell cursiva gigante y el artista en letra de cartel.
+   ========================================================================== */
+
+.standby {
+    position: fixed;
+    inset: 0;
+    z-index: 4500;
+    overflow: hidden;
+    background: var(--negro);
+    color: var(--papel);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.8s ease, visibility 0s linear 1.8s;
+    cursor: none;
+}
+
+.standby.activo {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1.8s ease, visibility 0s;
+}
+
+body.standby-on {
+    overflow: hidden;
+}
+
+/* Foto: dos capas que se funden; lo claro queda rojo y lo oscuro negro */
+.standby-imagen {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+}
+
+.standby-imagen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--rojo);
+    mix-blend-mode: multiply;
+}
+
+.standby-foto {
+    position: absolute;
+    inset: -4%;
+    background: center 22% / cover no-repeat;
+    filter: grayscale(1) contrast(1.55) brightness(1.05);
+    opacity: 0;
+    transition: opacity 3s ease;
+}
+
+.standby-foto.activa {
+    opacity: 1;
+    animation: standby-acercar 48s ease-in-out infinite alternate;
+}
+
+@keyframes standby-acercar {
+    from { transform: scale(1) translate(0, 0); }
+    to   { transform: scale(1.08) translate(-1.5%, -1%); }
+}
+
+/* Trama de semitono gruesa, grano y sombra abajo-izquierda para que se lea el verso */
+.standby-trama {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle, rgba(0, 0, 0, 0.5) 1.4px, transparent 2px) 0 0 / 7px 7px,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        linear-gradient(15deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.55) 40%, transparent 70%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, transparent 22%);
+}
+
+/* Sin foto: fondo casi negro con la trama sola, y el título manda */
+.standby.sin-foto .standby-trama {
+    background-color: #120303;
+}
+
+.standby-marca {
+    position: absolute;
+    top: var(--borde);
+    left: var(--borde);
+}
+
+.standby-logo {
+    width: clamp(120px, 14vw, 240px);
+    height: auto;
+}
+
+.standby-reloj {
+    position: absolute;
+    top: var(--borde);
+    right: var(--borde);
+    font-family: var(--cumbia);
+    font-weight: 700;
+    font-size: clamp(16px, 1.6vw, 28px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+}
+
+.standby-bloque {
+    position: absolute;
+    left: var(--borde);
+    right: var(--borde);
+    bottom: var(--borde);
+    max-width: 78vw;
+    transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.standby-bloque.cambiando,
+.standby-verso.cambiando {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
+.standby-verso {
+    position: relative;
+    margin: 0 0 0.5em;
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: clamp(34px, 5.4vw, 104px);
+    line-height: 1.08;
+    text-wrap: balance;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+    transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.standby-verso.largo {
+    font-size: clamp(28px, 4vw, 76px);
+}
+
+/* Comilla de imprenta antigua colgando, en amarillo de brocha */
+.standby-verso::before {
+    content: '\201C';
+    position: absolute;
+    left: -0.42em;
+    top: -0.12em;
+    color: var(--amarillo);
+}
+
+.standby-linea {
+    display: block;
+}
+
+.standby-artista {
+    display: inline-block;
+    padding: 0.1em 0.45em 0.05em;
+    background: var(--amarillo);
+    color: var(--negro);
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: clamp(18px, 2.1vw, 40px);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transform: rotate(-1.5deg);
+}
+
+.standby-titulo {
+    margin-top: 0.3em;
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: clamp(20px, 2.2vw, 42px);
+    color: var(--papel);
+}
+
+/* Sin verso: el título pasa a ser el titular del afiche */
+.standby-bloque.sin-verso .standby-verso {
+    display: none;
+}
+
+.standby-bloque.sin-verso .standby-titulo {
+    font-size: clamp(44px, 7.5vw, 140px);
+    line-height: 1;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+}
+
+.standby-pista {
+    position: absolute;
+    right: var(--borde);
+    bottom: var(--borde);
+    font-family: var(--cumbia);
+    font-size: var(--t-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--humo);
+    transition: opacity 1.5s ease;
+}
+
+.standby-pista.oculta {
+    opacity: 0;
+}
+
+@media (max-width: 700px) {
+    .standby-bloque { max-width: none; bottom: 64px; }
+    .standby-verso::before { left: -0.3em; }
+    .standby-pista { left: var(--borde); right: auto; bottom: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .standby-foto.activa { animation: none; }
+}
+
+/* ==========================================================================
+   Contraportada (tizen/js/contraportada.js)
+   Contratapa de LP antiguo: papel envejecido con marca de aro del disco,
+   créditos en dos voces (Barlow para el rótulo, IM Fell para el nombre).
+   ========================================================================== */
+
+.record-set.cp-tiene {
+    cursor: pointer;
+}
+
+.record-set.cp-tiene:focus-visible {
+    outline: 3px solid var(--amarillo);
+    outline-offset: 6px;
+}
+
+/* El giro: la funda se pone de canto, cambia de cara a la mitad y vuelve */
+.record-set .sleeve.cp-girando {
+    animation: cp-giro 0.7s ease-in-out;
+}
+
+@keyframes cp-giro {
+    0%   { transform: perspective(1400px) rotateY(0deg); }
+    50%  { transform: perspective(1400px) rotateY(90deg) scale(0.97); }
+    100% { transform: perspective(1400px) rotateY(0deg); }
+}
+
+.contraportada {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: none;
+    flex-direction: column;
+    gap: calc(var(--funda) * 0.03);
+    padding: 8% 8% 6%;
+    color: #1d1a16;
+    background:
+        /* marca de aro: el disco gastó el cartón */
+        radial-gradient(circle at 52% 50%, transparent 41%, rgba(80, 60, 30, 0.10) 42%, rgba(80, 60, 30, 0.04) 44.5%, transparent 46%),
+        /* grano del cartón */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        var(--papel);
+    box-shadow: inset 0 0 calc(var(--funda) * 0.08) rgba(120, 90, 40, 0.35);
+    overflow: hidden;
+}
+
+.sleeve.cp-volteada .contraportada {
+    display: flex;
+}
+
+.cp-cabecera {
+    padding-right: 24%;   /* el sello de efemérides tapa la esquina */
+    padding-bottom: calc(var(--funda) * 0.025);
+    border-bottom: 3px double rgba(29, 26, 22, 0.55);
+}
+
+.cp-artista {
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: calc(var(--funda) * 0.05);
+    line-height: 1.05;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--rojo);
+}
+
+.cp-titulo {
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: calc(var(--funda) * 0.085);
+    line-height: 1.02;
+    overflow-wrap: anywhere;
+}
+
+.cp-creditos {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--funda) * 0.018);
+    margin: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-fila dt {
+    font-family: var(--cumbia);
+    font-weight: 700;
+    font-size: calc(var(--funda) * 0.028);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7a6f60;
+}
+
+.cp-fila dd {
+    margin: 0;
+    font-family: var(--poesia);
+    font-size: calc(var(--funda) * 0.042);
+    line-height: 1.15;
+}
+
+.cp-creditos.cp-muchas { gap: calc(var(--funda) * 0.01); }
+.cp-creditos.cp-muchas dt { font-size: calc(var(--funda) * 0.024); }
+.cp-creditos.cp-muchas dd { font-size: calc(var(--funda) * 0.036); }
+
+.cp-nota {
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: calc(var(--funda) * 0.036);
+    color: #7a6f60;
+}
+
+.cp-pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    margin-top: auto;
+    padding-top: calc(var(--funda) * 0.02);
+    border-top: 1px solid rgba(29, 26, 22, 0.35);
+    font-family: var(--cumbia);
+    font-weight: 600;
+    font-size: calc(var(--funda) * 0.026);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7a6f60;
+}
+
+/* Pestaña que avisa que la funda se puede girar */
+.cp-pestana {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding: 0.25em 0.6em 0.2em;
+    background: var(--amarillo);
+    color: var(--negro);
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: calc(var(--funda) * 0.032);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.record-set:hover .cp-pestana,
+.record-set:focus-visible .cp-pestana,
+.sleeve.cp-volteada .cp-pestana {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .record-set .sleeve.cp-girando { animation-duration: 0.01s; }
+}
+
+/* ==========================================================================
+   Ficha del artista (tizen/js/ficha.js)
+   Recorte de diario pegado sobre la pantalla: papel con bordes rasgados,
+   retrato en semitono blanco y negro con cinta adhesiva, bio a dos columnas.
+   ========================================================================== */
+
+.now-playing .track-artist.ficha-si {
+    cursor: pointer;
+    text-decoration: underline dotted transparent;
+    text-underline-offset: 0.18em;
+    transition: text-decoration-color 0.2s ease;
+}
+
+.now-playing .track-artist.ficha-si:hover,
+.now-playing .track-artist.ficha-si:focus-visible {
+    text-decoration-color: currentColor;
+}
+
+.ficha-capa {
+    position: fixed;
+    inset: 0;
+    z-index: 4200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 4vw, 48px);
+    background: rgba(0, 0, 0, 0.72);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.ficha-capa.abierta {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.35s ease, visibility 0s;
+}
+
+.ficha {
+    position: relative;
+    width: min(980px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: clamp(28px, 4vw, 56px) clamp(20px, 4vw, 56px) clamp(24px, 3vw, 40px);
+    color: #1d1a16;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        var(--papel);
+    /* Bordes de arriba y abajo rasgados a mano */
+    clip-path: polygon(0 1.2%, 4% 0.3%, 9% 1.4%, 15% 0.2%, 22% 1.1%, 30% 0, 37% 1.3%, 45% 0.4%, 52% 1.2%, 60% 0.1%, 67% 1.4%, 75% 0.3%, 82% 1.1%, 90% 0.2%, 96% 1.3%, 100% 0.5%,
+                       100% 99.2%, 95% 100%, 88% 98.9%, 81% 99.8%, 73% 98.8%, 66% 99.9%, 58% 98.9%, 50% 99.7%, 43% 98.7%, 35% 99.9%, 27% 98.9%, 20% 99.8%, 12% 98.8%, 5% 99.9%, 0 99%);
+    transform: rotate(-0.8deg) translateY(12px);
+    transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.ficha-capa.abierta .ficha {
+    transform: rotate(-0.8deg);
+}
+
+.ficha-cerrar {
+    position: absolute;
+    top: clamp(12px, 2vw, 22px);
+    right: clamp(12px, 2vw, 22px);
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--negro);
+    color: var(--papel);
+    font-size: 28px;
+    line-height: 1;
+}
+
+.ficha-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(180px, 34%) 1fr;
+    grid-template-areas:
+        "retrato texto"
+        "radio   radio"
+        "pie     pie";
+    gap: clamp(20px, 3vw, 40px);
+}
+
+/* Retrato: blanco y negro con trama, "impreso" sobre el papel, y una cinta encima */
+.ficha-retrato {
+    grid-area: retrato;
+    position: relative;
+    align-self: start;
+    margin: 0;
+    aspect-ratio: 4 / 5;
+    background: #d8d0bf;
+    transform: rotate(1.6deg);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.ficha-retrato img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    filter: grayscale(1) contrast(1.35) brightness(1.05);
+    mix-blend-mode: multiply;
+}
+
+.ficha-retrato::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(circle, rgba(29, 26, 22, 0.35) 0.9px, transparent 1.3px) 0 0 / 4px 4px;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
+.ficha-retrato::after {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    z-index: 2;
+    width: 42%;
+    height: 30px;
+    background: rgba(255, 221, 0, 0.62);
+    transform: translateX(-50%) rotate(-4deg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.ficha-retrato.sin-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ficha-inicial {
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: clamp(90px, 14vw, 180px);
+    color: var(--rojo);
+}
+
+.ficha-texto {
+    grid-area: texto;
+    min-width: 0;
+}
+
+.ficha-antetitulo {
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: var(--t-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rojo);
+}
+
+.ficha-nombre {
+    margin: 0.1em 0 0.15em;
+    padding-bottom: 0.15em;
+    border-bottom: 3px double rgba(29, 26, 22, 0.6);
+    font-family: var(--poesia);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(38px, 5.4vw, 72px);
+    line-height: 1;
+}
+
+.ficha-alias {
+    margin-bottom: 0.6em;
+    font-family: var(--cumbia);
+    font-size: var(--t-xs);
+    letter-spacing: 0.06em;
+    color: #7a6f60;
+}
+
+/* Bio a dos columnas, con capitular roja */
+.ficha-bio {
+    margin-top: 0.8em;
+    font-family: var(--poesia);
+    font-size: clamp(17px, 1.35vw, 20px);
+    line-height: 1.45;
+    hyphens: auto;
+}
+
+.ficha-bio.larga {
+    column-count: 2;
+    column-gap: 1.6em;
+    column-rule: 1px solid rgba(29, 26, 22, 0.2);
+}
+
+.ficha-bio::first-letter {
+    float: left;
+    margin: 0.06em 0.08em 0 0;
+    font-size: 3.4em;
+    line-height: 0.8;
+    color: var(--rojo);
+}
+
+.ficha-nota {
+    margin-top: 0.8em;
+    font-family: var(--poesia);
+    font-style: italic;
+    color: #7a6f60;
+}
+
+.ficha-redes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4em 1.2em;
+    margin-top: 1em;
+    font-family: var(--cumbia);
+    font-weight: 700;
+    font-size: var(--t-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ficha-redes a {
+    color: var(--rojo);
+    text-decoration: none;
+    border-bottom: 2px solid var(--amarillo);
+}
+
+/* "Suena en Poesía y Cumbia": la lista como clasificados en columnas */
+.ficha-radio {
+    grid-area: radio;
+    padding-top: 0.6em;
+    border-top: 1px solid rgba(29, 26, 22, 0.4);
+}
+
+.ficha-radio-titulo {
+    display: inline-block;
+    margin-bottom: 0.7em;
+    padding: 0.12em 0.5em 0.06em;
+    background: var(--negro);
+    color: var(--amarillo);
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: var(--t-s);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: rotate(-1deg);
+}
+
+.ficha-canciones {
+    column-width: 15em;
+    column-gap: 2em;
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: clamp(17px, 1.3vw, 20px);
+    line-height: 1.5;
+    list-style: decimal-leading-zero inside;
+}
+
+.ficha-canciones li {
+    break-inside: avoid;
+}
+
+.ficha-canciones li::marker {
+    font-family: var(--cumbia);
+    font-style: normal;
+    font-size: 0.75em;
+    color: #7a6f60;
+}
+
+.ficha-canciones li.ahora {
+    color: var(--rojo);
+}
+
+.ficha-ahora {
+    margin-left: 0.5em;
+    padding: 0 0.35em;
+    background: var(--rojo);
+    color: var(--papel);
+    font-family: var(--cumbia);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.65em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    vertical-align: 0.2em;
+}
+
+.ficha-pedir {
+    margin-top: 1em;
+    padding: 0.4em 1em;
+    border: 0;
+    background: var(--rojo);
+    color: var(--papel);
+    font-family: var(--cumbia);
+    font-weight: 800;
+    font-size: var(--t-s);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ficha-pie {
+    grid-area: pie;
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    padding-top: 0.6em;
+    border-top: 1px solid rgba(29, 26, 22, 0.25);
+    font-family: var(--cumbia);
+    font-size: var(--t-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7a6f60;
+}
+
+.ficha-pie a {
+    color: inherit;
+}
+
+@media (max-width: 700px) {
+    .ficha-cuerpo {
+        grid-template-columns: 1fr;
+        grid-template-areas: "retrato" "texto" "radio" "pie";
+    }
+    .ficha-retrato { width: 62%; justify-self: center; }
+    .ficha-bio { column-count: 1; }
+    .ficha-pie { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ficha, .ficha-capa.abierta .ficha { transition: none; }
+}
+
+/* ==========================================================================
+   Árbol de versiones (tizen/js/versiones.js)
+   Una o dos líneas bajo el artista, con una pincelada roja que se dibuja.
+   ========================================================================== */
+
+.versiones {
+    margin-top: 10px;
+    max-width: 36em;
+}
+
+.vs-fila {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 4px;
+    font-size: clamp(16px, 1.15vw, 24px);
+    line-height: 1.25;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+}
+
+.versiones.vs-visible .vs-fila {
+    opacity: 1;
+    transition-delay: inherit;
+}
+
+.vs-trazo {
+    flex: none;
+    width: 42px;
+    height: 10px;
+    align-self: center;
+    overflow: visible;
+}
+
+.vs-trazo path {
+    fill: none;
+    stroke: var(--rojo);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 1.1s ease 0.2s;
+}
+
+.versiones.vs-visible .vs-trazo path {
+    stroke-dashoffset: 0;
+}
+
+.vs-etiqueta {
+    flex: none;
+    font-weight: 700;
+    font-size: 0.8em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--oro);
+}
+
+.vs-texto {
+    min-width: 0;
+    font-family: var(--poesia);
+    font-style: italic;
+    color: var(--papel);
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Efemérides (tizen/js/efemeride.js): sello de correo en la esquina del disco
+   ========================================================================== */
+
+.sello {
+    position: absolute;
+    top: calc(var(--funda) * -0.1);
+    left: calc(var(--funda) * 0.78);
+    z-index: 6;
+    width: calc(var(--funda) * 0.27);
+    min-width: 84px;
+    padding: 8px;
+    color: #1d1a16;
+    /* Borde dentado de sello: huecos redondos en la franja de papel que rodea el recuadro */
+    background: radial-gradient(circle at 0 0, transparent 4px, var(--papel) 4.6px) 0 0 / 16px 16px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
+    transform: rotate(7deg) scale(0.4);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.sello.sello-puesto {
+    transform: rotate(7deg) scale(1);
+    opacity: 1;
+}
+
+.record-set.changing .sello {
+    opacity: 0;
+}
+
+.sello-marco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 4px 5px;
+    border: 2px solid var(--rojo);
+    background: #f7f1e3;
+    text-align: center;
+    line-height: 1;
+}
+
+.sello-sup,
+.sello-inf {
+    font-weight: 800;
+    font-size: calc(var(--funda) * 0.04);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rojo);
+}
+
+.sello-num {
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: calc(var(--funda) * 0.15);
+    line-height: 0.95;
+    color: #1d1a16;
+}
+
+.sello-anio {
+    margin-top: 3px;
+    padding-top: 2px;
+    width: 100%;
+    border-top: 1px solid rgba(29, 26, 22, 0.35);
+    font-weight: 600;
+    font-size: calc(var(--funda) * 0.032);
+    letter-spacing: 0.12em;
+    color: #7a6f60;
+}
+
+/* Matasellos: círculo con la fecha en la esquina del sello y ondas hacia el disco.
+   Halo claro + tinta oscura: se lee sobre papel y sobre fondos oscuros. */
+.sello-matasellos {
+    position: absolute;
+    left: -112%;
+    bottom: -22%;
+    width: 150%;
+    overflow: visible;
+    transform: rotate(-10deg);
+    pointer-events: none;
+}
+
+.sello-matasellos .halo {
+    stroke: #f1ebdd;
+    opacity: 0.92;
+    stroke-linejoin: round;
+}
+
+.sello-matasellos .tinta {
+    stroke: #8a1610;
+}
+
+.sello-matasellos text {
+    fill: #8a1610;
+    stroke: #f1ebdd;
+    stroke-width: 3.5px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    font-family: var(--cumbia);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+/* Aniversario: sello amarillo que late */
+.sello-cumple {
+    background: radial-gradient(circle at 0 0, transparent 4px, var(--amarillo) 4.6px) 0 0 / 16px 16px;
+}
+
+.sello-cumple .sello-marco {
+    background: var(--amarillo);
+    border-color: var(--negro);
+}
+
+.sello-cumple .sello-sup,
+.sello-cumple .sello-inf {
+    color: var(--negro);
+}
+
+.sello-cumple.sello-puesto {
+    animation: sello-latido 2.4s ease-in-out 1s infinite;
+}
+
+@keyframes sello-latido {
+    0%, 100% { transform: rotate(7deg) scale(1); }
+    50%      { transform: rotate(5deg) scale(1.08); }
+}
+
+@media (max-width: 700px) {
+    .sello { left: auto; right: -8px; top: -14px; }
+}
+
+/* ==========================================================================
+   Historial en collage (el "recién escuchaste" como muro de recortes)
+   ========================================================================== */
+
+.history-art-wrapper {
+    position: relative;
+    padding: 10px 12px 8px 10px;
+    color: #1d1a16;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        var(--papel);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.6);
+    transform: rotate(var(--giro, 0deg));
+}
+
+.song-history-items li:nth-child(5n + 1) { --giro: -2.4deg; }
+.song-history-items li:nth-child(5n + 2) { --giro: 1.8deg; }
+.song-history-items li:nth-child(5n + 3) { --giro: -1deg; }
+.song-history-items li:nth-child(5n + 4) { --giro: 2.6deg; }
+.song-history-items li:nth-child(5n + 5) { --giro: -1.8deg; }
+
+/* Cinta adhesiva */
+.history-art-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 46px;
+    height: 17px;
+    background: rgba(255, 221, 0, 0.6);
+    transform: translateX(-50%) rotate(-3deg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.song-history-items li:nth-child(even)::before {
+    background: rgba(225, 37, 27, 0.5);
+    transform: translateX(-50%) rotate(4deg);
+}
+
+.history-art {
+    width: clamp(56px, 7vh, 84px);
+    height: clamp(56px, 7vh, 84px);
+}
+
+/* Retrato de Genius: blanco y negro, como foto de diario */
+.history-foto {
+    filter: grayscale(1) contrast(1.25);
+}
+
+.history-title {
+    color: #1d1a16;
+}
+
+.history-artist {
+    color: #5b5248;
+    font-weight: 600;
+}
+
+/* La hora "escrita a mano": cursiva roja torcida con subrayado de brocha */
+.history-time {
+    justify-self: start;
+    padding: 0 2px 3px;
+    font-family: var(--poesia);
+    font-style: italic;
+    font-size: clamp(15px, 1vw, 20px);
+    color: var(--rojo);
+    background: linear-gradient(100deg, transparent 0 3%, var(--amarillo) 3% 97%, transparent 97%) 0 100% / 100% 4px no-repeat;
+    transform: rotate(-3deg);
+    transform-origin: left center;
+}
+
+@media (max-width: 700px) {
+    .song-history-items li { --giro: 0deg !important; }
+    .song-history-items li:nth-child(odd) { --giro: -0.8deg !important; }
+    .song-history-items li:nth-child(even) { --giro: 0.8deg !important; }
+}
+
+/* Ficha sin retrato: el texto ocupa todo el ancho */
+.ficha-cuerpo.sin-retrato {
+    grid-template-columns: 1fr;
+    grid-template-areas: "texto" "radio" "pie";
+}
+
+/* ==========================================================================
+   Standby: disco y barra de tiempo en miniatura (abajo a la derecha)
+   ========================================================================== */
+
+.standby-bloque { max-width: 60vw; }
+
+.standby-mini {
+    position: absolute;
+    right: var(--borde);
+    bottom: var(--borde);
+    width: clamp(280px, 26vw, 520px);
+    padding-top: 6px;
+}
+
+.standby-mini-arte {
+    position: relative;
+    z-index: 2;
+    width: clamp(84px, 8vw, 150px);
+    height: clamp(84px, 8vw, 150px);
+    object-fit: cover;
+    box-shadow: 8px 0 20px rgba(0, 0, 0, 0.7);
+}
+
+.standby-mini-disco {
+    position: absolute;
+    top: 14px;
+    left: calc(clamp(84px, 8vw, 150px) * 0.55);
+    z-index: 1;
+    width: calc(clamp(84px, 8vw, 150px) * 0.94);
+    height: calc(clamp(84px, 8vw, 150px) * 0.94);
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #0b0b0b 0 2px, #191919 2px 3px);
+    box-shadow: 0 0 0 1px #222, 0 10px 24px rgba(0, 0, 0, 0.8);
+    animation: girar 4s linear infinite;
+}
+
+.standby-mini-sello {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34%;
+    height: 34%;
+    margin: -17% 0 0 -17%;
+    border-radius: 50%;
+    background: var(--rojo);
+    box-shadow: inset 0 0 0 2px var(--amarillo);
+}
+
+.standby-mini-tiempo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.standby-t {
+    flex: none;
+    font-weight: 600;
+    font-size: clamp(14px, 1.2vw, 22px);
+    letter-spacing: 0.04em;
+    color: var(--papel);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+}
+
+.standby-barra {
+    flex: 1;
+    height: 5px;
+    background: rgba(241, 235, 221, 0.28);
+}
+
+.standby-relleno {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--amarillo);
+}
+
+.standby-mini.sin-arte .standby-mini-arte,
+.standby-mini.sin-arte .standby-mini-disco { display: none; }
+.standby-mini.sin-tiempo .standby-mini-tiempo { display: none; }
+
+/* La pista de "toca para volver" pasa arriba, bajo la hora */
+.standby-pista {
+    top: calc(var(--borde) + 44px);
+    right: var(--borde);
+    bottom: auto;
+}
+
+@media (max-width: 700px) {
+    .standby-bloque { max-width: none; bottom: 150px; }
+    .standby-mini { left: var(--borde); right: var(--borde); width: auto; bottom: 28px; }
+    .standby-mini-arte, .standby-mini-disco { display: none; }
+    .standby-pista { top: auto; bottom: 8px; left: var(--borde); right: auto; }
+}
