@@ -329,7 +329,7 @@
         function funda() { return document.querySelector('.sleeve'); }
         genius = window.GeniusPYC.crear({ fondo: $('genius-fondo'), funda: funda });
         if (window.StandbyPYC) {
-            standby = window.StandbyPYC.crear({ capa: $('standby'), minutos: 2, alDespertar: wake });
+            standby = window.StandbyPYC.crear({ capa: $('standby'), minutos: 2, alDespertar: wake, pedidos: BASE + '/api/station/1/requests' });
         }
         // El botón Créditos solo existe cuando la canción tiene algo que mostrar
         if (window.ContraportadaPYC) {

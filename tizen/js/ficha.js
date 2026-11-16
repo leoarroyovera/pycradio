@@ -149,9 +149,20 @@
 
         // Otras canciones del mismo artista en la radio: la búsqueda de AzuraCast también encuentra
         // por título o álbum, así que se filtra por parecido del nombre del artista
+        otrasDelArtista(this.opts.pedidos, song, function (salida) {
+            datos.canciones = salida;
+            listo();
+        });
+    };
+
+    // Otras canciones del mismo artista en la radio: [{titulo}] ordenadas por título.
+    // La comparten la ficha y el standby; la última búsqueda queda en memoria para no repetirla.
+    var otrasCache = {};
+    function otrasDelArtista(pedidos, song, cb) {
+        var principal = global.GeniusPYC.artistas(song.artist)[0];
         var actual = limpiarTitulo(song.title);
-        getJSON(this.opts.pedidos + '?rowCount=200&searchPhrase=' + encodeURIComponent(principal), function (r) {
-            var filas = r.rows || r || [], salida = [], i, s, partes, j, parecido, titulo, repetida;
+        function filtrar(filas) {
+            var salida = [], i, s, partes, j, parecido, titulo, repetida;
             for (i = 0; i < filas.length; i++) {
                 s = filas[i].song;
                 if (!s) { continue; }
@@ -168,10 +179,15 @@
                 if (!repetida) { salida.push({ titulo: titulo }); }
             }
             salida.sort(function (a, b) { return a.titulo.localeCompare(b.titulo); });
-            datos.canciones = salida;
-            listo();
-        }, listo);
-    };
+            return salida;
+        }
+        if (otrasCache.principal === principal) { cb(filtrar(otrasCache.filas)); return; }
+        getJSON(pedidos + '?rowCount=200&searchPhrase=' + encodeURIComponent(principal), function (r) {
+            var filas = r.rows || r || [];
+            otrasCache = { principal: principal, filas: filas };
+            cb(filtrar(filas));
+        }, function () { cb([]); });
+    }
 
     Ficha.prototype.cerrar = function () {
         if (!this.abierta) { return; }
@@ -246,6 +262,7 @@
     };
 
     global.FichaPYC = {
+        otras: otrasDelArtista,
         crear: function (opts) {
             var f = new Ficha(opts);
             if (/[?&]ficha=demo\b/.test(global.location ? global.location.search : '')) {

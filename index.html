@@ -1830,7 +1830,11 @@
                     efemeride = window.EfemeridePYC.crear({ contenedor: function () { return document.querySelector('.now-playing .record-set'); } });
                 }
                 if (window.StandbyPYC) {
-                    standby = window.StandbyPYC.crear({ capa: document.getElementById('standby'), minutos: 3 });
+                    standby = window.StandbyPYC.crear({
+                        capa: document.getElementById('standby'),
+                        minutos: 3,
+                        pedidos: 'https://poesiaycumbia.duckdns.org/api/station/1/requests'
+                    });
                 }
             }
 

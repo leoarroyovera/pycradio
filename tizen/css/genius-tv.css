@@ -693,6 +693,12 @@
 
 .standby-linea { display: block; }
 
+/* Comilla de cierre, pegada al final de la última línea */
+.standby-linea:last-child:after {
+    content: '\201D';
+    color: #ffdd00;
+}
+
 .standby-artista {
     display: inline-block;
     padding: 4px 18px 0;
@@ -712,6 +718,32 @@
     font-style: italic;
     font-size: 46px;
     color: #f1ebdd;
+}
+
+/* Nota informativa: discreta, bajo el título */
+.standby-nota {
+    margin: 22px 0 0;
+    max-width: 1000px;
+    font-size: 30px;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    color: #f1ebdd;
+    opacity: 0.72;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+    transition: opacity 1.2s ease;
+}
+
+.standby-nota:empty { display: none; }
+
+.standby-nota.cambiando { opacity: 0; }
+
+.standby-nota-et {
+    margin-right: 16px;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #ffdd00;
 }
 
 .standby-bloque.sin-verso .standby-verso { display: none; }

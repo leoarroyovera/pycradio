@@ -1541,6 +1541,12 @@ body.standby-on {
     display: block;
 }
 
+/* Comilla de cierre, pegada al final de la última línea */
+.standby-linea:last-child::after {
+    content: '\201D';
+    color: var(--amarillo);
+}
+
 .standby-artista {
     display: inline-block;
     padding: 0.1em 0.45em 0.05em;
@@ -1560,6 +1566,37 @@ body.standby-on {
     font-style: italic;
     font-size: clamp(20px, 2.2vw, 42px);
     color: var(--papel);
+}
+
+/* Nota informativa (efeméride, créditos, otras canciones, datos): mucho más discreta que el verso */
+.standby-nota {
+    margin: 0.9em 0 0;
+    max-width: 44em;
+    font-family: var(--cumbia);
+    font-size: clamp(14px, 1.4vw, 26px);
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    color: var(--papel);
+    opacity: 0.72;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+    transition: opacity 1.2s ease;
+}
+
+.standby-nota:empty {
+    display: none;
+}
+
+.standby-nota.cambiando {
+    opacity: 0;
+}
+
+.standby-nota-et {
+    margin-right: 0.8em;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amarillo);
 }
 
 /* Sin verso: el título pasa a ser el titular del afiche */
