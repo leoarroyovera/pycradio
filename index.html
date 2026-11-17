@@ -221,7 +221,7 @@
                 <h2 class="section-title">Programas</h2>
                 <ul class="programs-grid">
                     <li class="program-card" tabindex="-1">
-                        <img src="images/programacion/suenos.png" alt="Sueños de un hombre despierto" onerror="this.style.display='none'">
+                        <img src="images/programacion/sinfonias_de_cafe.png" alt="Sinfonías de Café" onerror="this.style.display='none'">
                         <div class="program-info">
                             <p class="program-schedule">Lunes a domingo, 05:00</p>
                             <p>Noticias, música selecta y vacilona para despertar al humano asalariado.</p>
@@ -235,14 +235,21 @@
                         </div>
                     </li>
                     <li class="program-card" tabindex="-1">
-                        <img src="images/programacion/noches.png" alt="Noche de Cucharitas" onerror="this.style.display='none'">
+                        <img src="images/programacion/tu_tarde_bkn.png" alt="Tu Tarde BKN" onerror="this.style.display='none'">
+                        <div class="program-info">
+                            <p class="program-schedule">Lunes a domingo, 17:00</p>
+                            <p>El reloj del mundo avanza, pero el tuyo sigue en los 90s. Los temones más bkns para los lolos de 35. ¡Ah! Y cero poesía.</p>
+                        </div>
+                    </li>
+                    <li class="program-card" tabindex="-1">
+                        <img src="images/programacion/noche_de_cucharitas.png" alt="Noche de Cucharitas" onerror="this.style.display='none'">
                         <div class="program-info">
                             <p class="program-schedule">Domingo a jueves, 21:00</p>
                             <p>Ritmos apacibles para el Makin' Makin' Love.</p>
                         </div>
                     </li>
                     <li class="program-card" tabindex="-1">
-                        <img src="images/programacion/minue.png" alt="El Minué" onerror="this.style.display='none'">
+                        <img src="images/programacion/el_minue.png" alt="El Minué" onerror="this.style.display='none'">
                         <div class="program-info">
                             <p class="program-schedule">Viernes y sábado, 21:00</p>
                             <p>A.K.A. el bailongo de Poesía y Cumbia Radio.</p>
@@ -257,6 +264,13 @@
                         <div>
                             <h4>La Pildorita del Profesor Maza</h4>
                             <p>Pequeñas cápsulas informativas en la voz del astrónomo más querido de Chile.</p>
+                        </div>
+                    </li>
+                    <li class="feature-card" tabindex="-1">
+                        <img src="images/avatars/caballera.jpg" alt="" onerror="this.style.display='none'">
+                        <div>
+                            <h4>La Caballera del Zodíaco</h4>
+                            <p>La Tía Yoli nos traduce al español chileno lo que los Astros están diciendo. Sólo deseamos: ¡Que los vaiga bien!</p>
                         </div>
                     </li>
                     <li class="feature-card" tabindex="-1">
@@ -537,27 +551,27 @@
 
                 // Lunes a Domingo de 17 a 21 hrs (prioridad)
                 if (hour >= 17 && hour < 21) {
-                    return 'images/programas/tu_tarde_bkn.png';
+                    return 'images/programas/tu_tarde_bkn_lateral.png';
                 }
                 
                 // Domingo a Jueves (0-4) de 21 hrs a 5am
                 if ((day >= 0 && day <= 4) && (hour >= 21 || hour < 5)) {
-                    return 'images/programas/noche_de_cucharitas.png';
+                    return 'images/programas/noche_de_cucharitas_lateral.png';
                 }
                 
                 // Viernes y Sábado (5-6) de 21 hrs a 5am
                 if ((day === 5 || day === 6) && (hour >= 21 || hour < 5)) {
-                    return 'images/programas/dance_y_vacile.png';
+                    return 'images/programas/el_minue_lateral.png';
                 }
                 
                 // Lunes a Domingo de 05 am a 09 am
                 if (hour >= 5 && hour < 9) {
-                    return 'images/programas/levantate_papito.png';
+                    return 'images/programas/sinfonias_de_cafe_lateral.png';
                 }
                 
                 // Lunes a Domingo de 09 am a 17 hrs
                 if (hour >= 9 && hour < 17) {
-                    return 'images/programas/antologia.png';
+                    return 'images/programas/antologia_lateral.png';
                 }
                 
                 // Cualquier otro horario

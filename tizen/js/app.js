@@ -485,11 +485,11 @@
         var now = new Date();
         var day = now.getDay();
         var hour = now.getHours();
-        if (hour >= 17 && hour < 21) { return 'tu_tarde_bkn'; }
-        if (day >= 0 && day <= 4 && (hour >= 21 || hour < 5)) { return 'noche_de_cucharitas'; }
-        if ((day === 5 || day === 6) && (hour >= 21 || hour < 5)) { return 'dance_y_vacile'; }
-        if (hour >= 5 && hour < 9) { return 'levantate_papito'; }
-        if (hour >= 9 && hour < 17) { return 'antologia'; }
+        if (hour >= 17 && hour < 21) { return 'tu_tarde_bkn_lateral'; }
+        if (day >= 0 && day <= 4 && (hour >= 21 || hour < 5)) { return 'noche_de_cucharitas_lateral'; }
+        if ((day === 5 || day === 6) && (hour >= 21 || hour < 5)) { return 'el_minue_lateral'; }
+        if (hour >= 5 && hour < 9) { return 'sinfonias_de_cafe_lateral'; }
+        if (hour >= 9 && hour < 17) { return 'antologia_lateral'; }
         return 'default';
     }
 
