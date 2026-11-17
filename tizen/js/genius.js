@@ -28,7 +28,7 @@
 (function (global) {
     'use strict';
 
-    var TOKEN = 'tqOYO94WRYKj1G6N9_UG2Gld50VcUEu92yqVTYLI8Hf-J7wxFKXn-aqZz5f7hZgl';
+    var TOKEN = '1iTwhOQMk9sSK3l7m2hVDkhxa0AxeEm96xZbVxbWuUm2YuVHY2zsKPDjf7VD5BbX';
     var API = 'https://api.genius.com';
     var CACHE_OK = 14 * 86400000;     // ms que vale una respuesta encontrada
     var CACHE_NADA = 2 * 86400000;    // y una "no está en Genius"
